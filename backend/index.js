@@ -75,6 +75,8 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 
 // 404 handler (API)
 app.use((req, res, _next) => {
+    console.log(req);
+    
     if (req.originalUrl.startsWith('/api')) {
         return res.status(404).json({ error: 'Not found' });
     }
