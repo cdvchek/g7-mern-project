@@ -84,3 +84,31 @@ pids
 *.pid
 *.seed
 *.pid.lock
+
+# ---------- Flutter/Dart (frontend-ios) ----------
+frontend-ios/.dart_tool/
+frontend-ios/.packages
+frontend-ios/.flutter-plugins
+frontend-ios/.flutter-plugins-dependencies
+frontend-ios/build/
+
+# IDE noise
+frontend-ios/.idea/
+frontend-ios/*.iml
+
+# ---------- iOS (CocoaPods & generated) ----------
+frontend-ios/ios/Pods/
+frontend-ios/ios/.symlinks/
+frontend-ios/ios/Flutter/ephemeral/
+frontend-ios/ios/Flutter/Flutter.framework
+frontend-ios/ios/Flutter/Flutter.podspec
+frontend-ios/ios/Flutter/Generated.xcconfig
+frontend-ios/ios/Flutter/.last_build_id
+frontend-ios/ios/ServiceDefinitions.json
+frontend-ios/ios/Runner/GeneratedPluginRegistrant.*
+frontend-ios/ios/Runner.xcodeproj/project.xcworkspace/
+frontend-ios/ios/Runner.xcworkspace/xcuserdata/
+
+# Keep lockfiles for reproducible builds (do NOT ignore these):
+#   frontend-ios/pubspec.lock
+#   frontend-ios/ios/Podfile.lock
