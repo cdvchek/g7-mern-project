@@ -15,7 +15,7 @@
 .
 ├─ backend/ # Express + MongoDB (API + sessions)
 ├─ frontend-web/ # Next.js (React) web app
-└─ frontend-ios/ # Flutter (iOS-only app)\
+└─ frontend-ios/ # Flutter (iOS-only app)
 ```
 
 ---
