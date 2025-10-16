@@ -26,7 +26,7 @@
 cd backend
 npm install
 ```
-Create a .env file inside ```/backend```
+Create a .env file inside `/backend`
 
 ```bash
 MONGODB_URI=YOUR_MONGODB_URI_HERE
@@ -40,7 +40,7 @@ Install nodemon:
 npm install -g nodemon
 ```
 
-Start the backend (from the ```/backend``` directory):
+Start the backend (from the `/backend` directory):
 ```bash
 nodemon index.js
 ```
@@ -85,11 +85,13 @@ flutter run -d ios
 cd backend
 nodemon index.js
 ```
+
 ```bash
 # Terminal 2 - Web Frontend
 cd frontend-web
 npm run dev
 ```
+
 ```bash
 # Terminal 3 - iOS Frontend
 cd frontend-ios
