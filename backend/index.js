@@ -59,7 +59,7 @@ const sess = {
         secure: process.env.NODE_ENV === 'production',
     },
     store: MongoStore.create({
-        mongoUrl: process.env.SESSION_NAME,
+        mongoUrl: process.env.MONGODB_URI,
         collectionName: 'sessions',
         ttl: 60 * 60 * 2, // 2 hours (seconds)
     }),
