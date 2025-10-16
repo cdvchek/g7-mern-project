@@ -1,8 +1,1 @@
 # Setup & Run Locally
-
-## Prerequisites
-- **Node.js** and **npm**
-- **Nodemon**
-- **Flutter SDK** (for the iOS app)
-- **Xcode** + **CocoaPods** (`sudo gem install cocoapods`) — required for iOS builds
-- A **MongoDB Atlas connection string** or local MongoDB instance
