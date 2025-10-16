@@ -26,6 +26,7 @@ Create a .env file inside `/backend`
 
 ```bash
 MONGODB_URI=YOUR_MONGODB_URI_HERE
+SESSION_NAME=session_id
 SESSION_SECRET=CHANGE_ME_TO_A_SECURE_RANDOM_STRING
 CORS_ORIGIN=http://localhost:3000
 NODE_ENV=development
