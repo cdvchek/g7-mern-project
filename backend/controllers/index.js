@@ -2,10 +2,10 @@ const router = require('express').Router();
 
 router.get('/health', (req, res) => {
     try {
-        res.status(200).json({msg: 'ok'});
+        res.status(200).json({ msg: 'ok' });
     } catch (err) {
         console.log(err);
-        res.status(500).json({error: err});
+        res.status(500).json({ error: err });
     }
 });
 

@@ -8,7 +8,7 @@ const routes = require('./controllers');
 const startServer = async () => {
     await connectMongoose();
     const sess = require('./connection/session');
-    
+
     const app = express();
     const port = process.env.PORT || 3001;
     app.use(express.json());
@@ -21,11 +21,11 @@ const startServer = async () => {
             credentials: true,
         })
     );
-    
+
     if (process.env.NODE_ENV === 'production') {
         app.set('trust proxy', 1);
     }
-    
+
     app.use(session(sess));
     app.use('/api', routes);
     app.use((req, res, _next) => {
@@ -38,7 +38,7 @@ const startServer = async () => {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
     });
-    
+
     app.listen(port, () => {
         console.log(`Server listening on http://localhost:${port}`);
     });
