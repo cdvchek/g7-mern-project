@@ -16,20 +16,20 @@ const accountSchema = new Schema(
         type: Schema.Types.ObjectId,
         required: true,
 
-    },
+        },
 
     plaid_account_id: {
         type: Schema.Types.ObjectId,
         required: true,
 
-    },
+        },
 
-    name: {
-        type: String,
-        trim: true,
-        default: '',
-        required: true,
-    },
+        name: {
+            type: String,
+            trim: true,
+            default: '',
+            required: true,
+        },
 
     // Plaid type 
     type: {
@@ -37,25 +37,25 @@ const accountSchema = new Schema(
         enum: ['depository', 'credit'],
         
 
-    }, 
+        },
 
-    // Plaid type 
-    subtype: {
-        type: String,
-        enum: ['checking', 'savings', 'credit card']
-        
-    }, 
+        // Plaid type 
+        subtype: {
+            type: String,
+            enum: ['checking', 'savings', 'credit card']
 
-  },
-  { timestamps: true } // Automatically adds createdAt and updatedAt
+        },
+
+    },
+    { timestamps: true } // Automatically adds createdAt and updatedAt
 );
 
 accountSchema.methods.toSafeJSON = function () {
     return {
-      id: this._id,
-      name: this.name || '',
-      createdAt: this.createdAt,
+        id: this._id,
+        name: this.name || '',
+        createdAt: this.createdAt,
     };
-  };
-  
-  module.exports = model('Account', accountSchema);
+};
+
+module.exports = model('Account', accountSchema);

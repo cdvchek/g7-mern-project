@@ -1,13 +1,13 @@
 const router = require('express').Router();
 const { User } = require('../../models');
 
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { email, password, name, timezone, currency } = req.body || {};
         if (!email || !password) {
             return res.status(400).json({ error: "Email and password are required." });
         }
-        
+
         const normEmail = String(email).trim().toLowerCase();
 
         const exists = await User.findOne({ email: normEmail }).lean(); // .lean() cuts out a lot of unwanted stuff
@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
         return res.status(201).json({ user: user.toSafeJSON() });
     } catch (err) {
         console.log(err);
-        res.status(500).json({error: err});
+        res.status(500).json({ error: err });
     }
 });
 
