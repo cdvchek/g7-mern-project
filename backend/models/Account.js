@@ -1,25 +1,26 @@
 // models/Account.js
 
 const { Schema, model } = require('mongoose');
+const User = require('./User');
 const bcrypt = require('bcryptjs');
 
 const accountSchema = new Schema(
-    {
-        user_id: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            populate: true,
-            index: true,
-            unique: true,
+  {
+    user_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+
+    plaid_item_id: {
+        type: Schema.Types.ObjectId,
+        required: true,
+
         },
 
-        plaid_item_id: {
-            type: Schema.Types.ObjectId,
-
-        },
-
-        plaid_account_id: {
-            type: Schema.Types.ObjectId,
+    plaid_account_id: {
+        type: Schema.Types.ObjectId,
+        required: true,
 
         },
 
@@ -30,10 +31,11 @@ const accountSchema = new Schema(
             required: true,
         },
 
-        // Plaid type 
-        type: {
-            type: String,
-            enum: ['depository', 'credit'],
+    // Plaid type 
+    type: {
+        type: String,
+        enum: ['depository', 'credit'],
+        
 
         },
 
