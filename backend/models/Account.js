@@ -24,12 +24,12 @@ const accountSchema = new Schema(
 
         },
 
-        name: {
-            type: String,
-            trim: true,
-            default: '',
-            required: true,
-        },
+    name: {
+        type: String,
+        trim: true,
+        default: '',
+        required: true,
+    },
 
     // Plaid type 
     type: {
