@@ -33,18 +33,18 @@ const accountSchema = new Schema(
 
     // Plaid type 
     type: {
+    type: String,
+    enum: ['depository', 'credit'],
+    
+
+    },
+
+    // Plaid type 
+    subtype: {
         type: String,
-        enum: ['depository', 'credit'],
-        
+        enum: ['checking', 'savings', 'credit card']
 
-        },
-
-        // Plaid type 
-        subtype: {
-            type: String,
-            enum: ['checking', 'savings', 'credit card']
-
-        },
+    },
 
     },
     { timestamps: true } // Automatically adds createdAt and updatedAt

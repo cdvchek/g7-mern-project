@@ -1,11 +1,3 @@
-/*
-user_id: ObjectId,
-transaction_id: ObjectId, // FK => transaction
-envelope_id: ObjectId, // FK => envelope
-amount: int // cents
-note: string
-*/
-
 // models/Split.js
 
 const { Schema, model } = require('mongoose');
@@ -18,29 +10,32 @@ const Envelope = require ('./Envelope')
 const splitSchema = new Schema(
   {
     user_id: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
     },
 
     transaction_id: {
-        type: Schema.Types.ObjectId,
-        ref: 'Transaction',
-        require: true,
+      type: Schema.Types.ObjectId,
+      ref: 'Transaction',
+      require: true,
     },
 
     envelope_id: {
-        type: Schema.Types.ObjectId,
-        ref: 'Envelope',
-        require: true,
+      type: Schema.Types.ObjectId,
+      ref: 'Envelope',
+      require: true,
     },
 
     amount: {
-        type: Schema.Types.Int32,
+      type: Schema.Types.Int32,
+      defualt: 0,
     },
 
     note: {
-        type: String,
+      type: String,
+      defualt: '',
+
     },
 
   },
