@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import InputForm from "@/components/InputForm";
 
+import styles from "./LoginPage.module.css"
+
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -14,8 +16,8 @@ export default function LoginPage() {
     ];
 
     return (
-        <div id="background">
-            <InputForm inputs={inputs} />
+        <div className={styles.background}>
+            <InputForm title={"Login"} inputs={inputs} />
         </div>
     )
 }

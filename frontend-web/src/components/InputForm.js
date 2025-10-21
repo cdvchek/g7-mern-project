@@ -1,14 +1,16 @@
 "use client"
-
-import { useState } from "react";
-
 import FormInput from "./FormInput";
 
-export default function LoginPage({ inputs }) {
+import styles from "./InputForm.module.css";
+
+export default function InputForm({ title, inputs }) {
 
     return (
-        <div id="background">
-            <InputForm inputs={inputs} />
+        <div className={styles.formCard}>
+            <h1>{title}</h1>
+            {inputs.map((input, i) => (
+                <FormInput key={i} name={input.name} setValue={input.setValue} />
+            ))}
         </div>
     )
 }

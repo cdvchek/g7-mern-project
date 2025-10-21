@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
+import "../css/palettes.css"
 import LoginPage from "../pages/LoginPage";
 
 export default function Home() {
@@ -9,6 +10,8 @@ export default function Home() {
     if (session) redirect("/dashboard");
 
     return (
-        <LoginPage />
+        <div className="theme-blue">
+            <LoginPage />
+        </div>
     );
 }
