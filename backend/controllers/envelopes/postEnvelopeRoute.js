@@ -2,7 +2,7 @@ const router = require('express').Router();
 const requireAuth = require('../../middleware/requireAuth');
 const { Envelope } = require('../../models');
 
-router.use(requireAuth);
+//router.use(requireAuth);
 
 router.post('/', async (req, res) => {
   try {
