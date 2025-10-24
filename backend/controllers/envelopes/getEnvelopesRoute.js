@@ -3,10 +3,8 @@ const router = require('express').Router();
 const requireAuth = require('../../middleware/requireAuth');
 const { Envelope } = require('../../models');
 
-router.use(requireAuth);
-
 // Get all envelopes for the logged-in user
-router.get('/', async (req, res) => {
+router.get('/',requireAuth, async (req, res) => {
     try {
         // Tries to grab the id of the user that's logged in
         const userId = req.session.userId;
