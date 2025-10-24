@@ -1,0 +1,5 @@
+.formCard{
+    background-color: var(--primary);
+    width: 400px;
+    height: 550px;
+}

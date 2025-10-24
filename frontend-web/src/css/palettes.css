@@ -1,0 +1,59 @@
+/* palettes.css */
+
+/* Default theme (fallbacks if no theme is active) */
+:root {
+  --bg: #FFF7F3;
+  --primary: #FF6B6B;
+  --accent: #00BFA6;
+  --neutral: #7A847E;
+  --text: #2E2E2E;
+}
+
+/* ===== Modern Coral & Teal ===== */
+.theme-coral {
+  --bg: #FFF7F3;
+  --primary: #FF6B6B;
+  --accent: #00BFA6;
+  --neutral: #7A847E;
+  --text: #2E2E2E;
+}
+
+/* ===== Sage Green & Gold ===== */
+.theme-sage {
+  --bg: #F9F7F1;
+  --primary: #A8BCA1;
+  --accent: #E3B23C;
+  --neutral: #7A847E;
+  --text: #2F3B2F;
+}
+
+/* ===== Lavender & Indigo ===== */
+.theme-lavender {
+  --bg: #F6F4FF;
+  --primary: #B9AEEB;
+  --accent: #6254A0;
+  --neutral: #F4C6A6;
+  --text: #2C2644;
+}
+
+/* ===== Sunset Orange & Navy ===== */
+.theme-sunset {
+  --bg: #FFF9F4;
+  --primary: #FF865E;
+  --accent: #FFD23F;
+  --neutral: #273E47;
+  --text: #1C1F23;
+}
+
+/* ===== Cool Blue & Silver ===== */
+.theme-blue {
+  --bg: #F6FAFD;
+  --primary: #5CA9E6;
+  --accent: #1D3557;
+  --neutral: #CED4DA;
+  --text: #2B2D42;
+}
+
+body {
+    margin: 0;
+}
