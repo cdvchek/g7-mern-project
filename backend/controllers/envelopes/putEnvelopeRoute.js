@@ -9,7 +9,7 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
         const { id } = req.params;
         const { name, color, amount, order } = req.body;
 
-        // Validate the id is a valid ObjectId
+        // Validate the id is a valid ObjectId if not return error 400
         if (!require('mongoose').Types.ObjectId.isValid(id)) {
             return res.status(400).json({ error: 'Invalid envelope ID' });
         }
@@ -18,7 +18,7 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
         const updates = {};
         // Validates name is a non-empty string and a string
         if (name !== undefined) {
-            if (typeof name !== 'string' || name.trim() === '') {
+            if (!name || name.trim() === '') {
                 return res.status(400).json({ error: 'Name is not a string and name is empty' });
             }
             // Update name after validation
@@ -34,9 +34,13 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
             updates.color = color.trim();
         }
 
+        // Parse the integers to assure that we are recieving numbers
+        const parsedAmount = Number(amount);
+        const parsedOrder = Number(order);
+
         // Validates amount is an integer and >= 0 
-        if (amount !== undefined) {
-            if (!Number.isInteger(amount) || amount < 0) {
+        if (parsedAmount !== undefined) {
+            if (!Number.isInteger(parsedAmount) || parsedAmount < 0) {
                 return res.status(400).json({ error: 'Amount is not receiving an integer and is less than 0' });
             }
             // Update amount after validation
@@ -44,8 +48,8 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
         }
 
         // Validates order is an integer and >= 0
-        if (order !== undefined) {
-            if (!Number.isInteger(order) || order < 0) {
+        if (parsedOrder !== undefined) {
+            if (!Number.isInteger(parsedOrder) || parsedOrder < 0) {
                 return res.status(400).json({ error: 'Order is not receiving an integer and is less than 0' });
             }
             // Update order after validation
