@@ -4,7 +4,7 @@ const requireAuth = require('../../middleware/requireAuth');
 const { Envelope } = require('../../models');
 
 // Get all envelopes for the logged-in user
-router.get('/',requireAuth, async (req, res) => {
+router.get('/',requireAuth, async (req, res) => { // Added requireAuth for the specific route
     try {
         // Tries to grab the id of the user that's logged in
         const userId = req.session.userId;
@@ -44,7 +44,7 @@ router.get('/:id', async (req, res) => {
         return res.json(envelope.toSafeJSON());
     // If there is an error getting the envelope it will be caught and returned with error 500
     } catch (error) {
-        console.error("Error getting envelope:", error);
+        console.error("Error getting the envelope:", error);
         return res.status(500).json({ error: 'Internal error could not grab envelope' });
     }
 }); 

@@ -2,7 +2,7 @@ const router = require('express').Router();
 const requireAuth = require('../../middleware/requireAuth');
 const { Envelope } = require('../../models');
 
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuth, async (req, res) => { // Added requireAuth for the specific route
   try {
     const { name, color, amount, order } = req.body;
 
@@ -40,11 +40,12 @@ router.post('/', requireAuth, async (req, res) => {
     // Return the safe JSON representation of the envelope
     return res.status(201).json(envelope.toSafeJSON());
 
-    // If there is an error it will be caught and handled below
+  // If there is an error it will be caught and returned with error 500
   } catch (error) {
-    console.error("Error creating envelope:", error);
+    console.error("Error envelope could not be created:", error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
  
+// End of file dont write after
 module.exports = router;
