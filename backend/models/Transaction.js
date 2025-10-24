@@ -33,12 +33,12 @@ const transactionSchema = new Schema(
   { timestamps: true } // Automatically adds createdAt and updatedAt
 );
 
- accountSchema.methods.toSafeJSON = function () {
+ /* accountSchema.methods.toSafeJSON = function () {
     return {
       id: this._id,
       name: this.name || '',
       createdAt: this.createdAt,
     };
-  }; 
+  };  */
   
   module.exports = model('Transaction', transactionSchema);
