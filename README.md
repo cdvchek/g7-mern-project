@@ -68,7 +68,7 @@ App will be available at http://localhost:3000
 ---
 
 
-## Frontend iOS Setup (`/frontend-ios`)
+## Frontend iOS Setup (`/frontend_ios`)
 
 
 ```bash
@@ -77,11 +77,17 @@ flutter pub get
 ```
 
 
-First time iOS setup:
+Open iOS Simulator
+Cmd + Space 
+Enter the Simulator
 ```bash
-cd ios
-pod install
-cd ..
+flutter devices
+```
+This will show a list of all connected devices. Copy the Device ID
+Ex: E414438D-8BD0-4D8D-888D-3CD02349F8F7
+```bash
+# Replace this device ID with the one you copied from your terminal
+flutter run -d E414438D-8BD0-4D8D-888D-3CD02349F8F7
 ```
 
 
