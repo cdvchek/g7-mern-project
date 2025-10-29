@@ -1,8 +1,9 @@
+// Routes the envelope get requests
 const router = require('express').Router();
 const requireAuth = require('../../middleware/requireAuth');
 const { Envelope } = require('../../models');
 
-// POST /envelopes
+// Post create a new envelope
 router.post('/', requireAuth, async (req, res) => { // Added requireAuth for the specific route
   try {
     const { name, color, amount, order } = req.body;

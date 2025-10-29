@@ -1,8 +1,9 @@
+// Routes the envelope get requests
 const router = require('express').Router();
 const requireAuth = require('../../middleware/requireAuth');
 const { Envelope } = require('../../models');
 
-// PUT /envelopes/:id
+// Put updates to an envelope by ID
 router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for the specific route
     try {
         // Extract the envelope ID from the URL parameters
