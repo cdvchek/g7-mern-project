@@ -42,6 +42,7 @@ router.get('/:id', async (req, res) => {
 
         // Return the safe JSON representation of the envelope
         return res.json(envelope.toSafeJSON());
+        
     // If there is an error getting the envelope it will be caught and returned with error 500
     } catch (error) {
         console.error("Error getting the envelope:", error);

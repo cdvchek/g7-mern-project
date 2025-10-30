@@ -71,12 +71,13 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
 
         // Return the updated envelope
         return res.json(envelope.toSafeJSON());
+
     // If there is an error it will be caught and returned with error 500
     } catch (error) {
         console.error('Error envelope could not be updated:', error);
         return res.status(500).json({ error: 'Internal error' });
     }
-});
+});     
 
 // End of file dont write after
 module.exports = router;
