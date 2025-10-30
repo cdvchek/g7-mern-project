@@ -25,12 +25,12 @@ router.delete('/:id', requireAuth, async (req, res) => { // Added requireAuth fo
           return res.status(404).json({ error: "Envelope not found" });
     }
       // Return the deleted envelope
-      return res.status(200).json(envelope.toSafeJSON());
+      return res.json(envelope.toSafeJSON());
 
     // If there is an error it will be caught and returned with error 500
   } catch (error) {
       console.error("Error envelope could not be deleted:", error);
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Internal error could not delete' });
   }
 });
 

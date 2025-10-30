@@ -40,12 +40,12 @@ router.post('/', requireAuth, async (req, res) => { // Added requireAuth for the
       const envelope = await Envelope.create(payload);
     
       // Return the safe JSON representation of the envelope
-      return res.status(201).json(envelope.toSafeJSON());
+      return res.json(envelope.toSafeJSON());
 
   // If there is an error it will be caught and returned with error 500
   } catch (error) {
       console.error("Error envelope could not be created:", error);
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Internal error could not create' });
   }
 });
  
