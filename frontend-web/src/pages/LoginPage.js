@@ -12,8 +12,19 @@ export default function LoginPage() {
 
   return (
     <div className={styles.page}>
+        <video
+        className={styles.bgVideo}
+        src="/wavebg.webm"
+        autoPlay
+        loop
+        muted
+        playsInline
+        />
+
       <div className={styles.loginBox}>
-        <h2 className={styles.title}>Login</h2>
+        <img src="/budgielogo.png" alt="logo" className={styles.logo}/>
+        <h2 className={styles.title}>Welcome to BUDGI:3</h2>
+        <p className={styles.logoText}>Please enter your login details to continue</p>
 
         <div className={styles.inputGroup}>
           <input
