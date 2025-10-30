@@ -75,7 +75,7 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
     // If there is an error it will be caught and returned with error 500
     } catch (error) {
         console.error('Error envelope could not be updated:', error);
-        return res.status(500).json({ error: 'Internal error' });
+        return res.status(500).json({ error: 'Internal error could not be updated' });
     }
 });     
 
