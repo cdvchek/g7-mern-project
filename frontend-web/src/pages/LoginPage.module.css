@@ -1,5 +1,121 @@
-.background {
-    background-color: var(--bg);
-    height: 100vh;
-    width: 100vw;
+.page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #ffffff;
+  font-family: "Inter", sans-serif;
+}
+
+/* white centered box */
+.loginBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 360px;
+  padding: 40px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* title */
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 28px;
+}
+
+/* input field group */
+.inputGroup {
+  position: relative;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* input boxes */
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d3d3d3;
+  border-radius: 6px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-color: #000;
+}
+
+/* eye button */
+.iconButton {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #1a1a1a;
+  font-size: 14px;
+  padding: 4px 6px;
+}
+
+.iconButton:hover {
+  opacity: 0.8;
+}
+
+/* forgot password link */
+.forgot {
+  align-self: center;
+  margin-bottom: 24px;
+  color: #007aff;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.forgot:hover {
+  text-decoration: underline;
+}
+
+/* black login button */
+.loginButton {
+  width: 100%;
+  padding: 12px 0;
+  background-color: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.loginButton:hover {
+  background-color: #333;
+}
+
+/* eye toggle button */
+.eyeButton {
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.eyeButton:hover {
+  transform: translateY(-50%) scale(1.2);
+  opacity: 0.8;
 }
