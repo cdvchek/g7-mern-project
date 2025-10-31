@@ -3,7 +3,7 @@
 import { useState } from "react";
 import styles from "./LoginPage.module.css";
 
-export default function LoginPage() {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -86,8 +86,19 @@ export default function LoginPage() {
         <a href="#" className={styles.forgot}>
           Forgot Password?
         </a>
-
+        
+        {/* login button */}
         <button className={styles.loginButton}>LOGIN</button>
+        
+        {/* separator */}
+        <div className={styles.separatorContainer}>
+          <span className={styles.separatorLine}></span>
+          <span className={styles.separatorText}>or</span>
+          <span className={styles.separatorLine}></span>
+        </div>
+
+        {/* sign up button */}
+        <button className={styles.signupButton}>SIGN UP</button>
       </div>
     </div>
   );

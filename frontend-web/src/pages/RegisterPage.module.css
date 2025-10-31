@@ -21,6 +21,15 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
+/* adjustments for register layout */
+.registerBox .title {
+  margin-bottom: 8px;
+}
+
+.registerBox .logoText {
+  margin-bottom: 28px;
+}
+
 /* logo */
 .logo {
   width: 120px;
@@ -28,7 +37,7 @@
   display: block;
 }
 
-/* logo sub text */
+/* text under logo */
 .logoText {
   font-size: 15px;
   font-weight: 600;
@@ -44,14 +53,14 @@
   margin-bottom: 10px;
 }
 
-/* input field group */
+/* input groups */
 .inputGroup {
   position: relative;
   width: 100%;
   margin-bottom: 16px;
 }
 
-/* input boxes */
+/* input fields */
 .input {
   width: 100%;
   padding: 12px 14px;
@@ -66,95 +75,7 @@
   border-color: #000;
 }
 
-/* eye button */
-.iconButton {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: #1a1a1a;
-  font-size: 14px;
-  padding: 4px 6px;
-}
-
-.iconButton:hover {
-  opacity: 0.8;
-}
-
-/* forgot password link */
-.forgot {
-  align-self: center;
-  margin-bottom: 24px;
-  color: #007aff;
-  font-size: 14px;
-  text-decoration: none;
-}
-
-.forgot:hover {
-  text-decoration: underline;
-}
-
-/* black login button */
-.loginButton {
-  width: 100%;
-  padding: 12px 0;
-  background-color: #1a1a1a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.loginButton:hover {
-  background-color: #333;
-}
-
-/* Separator */
-.separatorContainer {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  margin: 20px 0;
-}
-
-.separatorLine {
-  flex: 1;
-  height: 1px;
-  background-color: #d3d3d3;
-}
-
-.separatorText {
-  margin: 0 10px;
-  font-size: 14px;
-  color: #888;
-}
-
-/* Sign Up button */
-.signupButton {
-  width: 100%;
-  padding: 12px 0;
-  background-color: #007aff; /* blue */
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.signupButton:hover {
-  background-color: #005bb5;
-}
-
-
-/* eye toggle button */
+/* eye toggle */
 .eyeButton {
   position: absolute;
   right: -10px;
@@ -175,7 +96,44 @@
   opacity: 0.8;
 }
 
-/* web background */
+/* main button */
+.loginButton {
+  width: 100%;
+  padding: 12px 0;
+  background-color: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 10px;
+}
+
+.loginButton:hover {
+  background-color: #333;
+}
+
+/* bottom text */
+.loginRedirectText {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+}
+
+.loginRedirectText a {
+  color: #007aff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.loginRedirectText a:hover {
+  text-decoration: underline;
+}
+
+/* background video */
 .bgVideo {
   position: fixed;
   top: 0;
@@ -184,7 +142,5 @@
   height: 100%;
   object-fit: cover;
   z-index: -1;
-  pointer-events: none; 
+  pointer-events: none;
 }
-
-
