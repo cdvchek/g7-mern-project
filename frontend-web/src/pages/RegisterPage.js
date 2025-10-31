@@ -1,179 +1,84 @@
 "use client";
 
 import { useState } from "react";
-import React from "react";
+import { useRouter } from "next/navigation";
+
 import styles from "./RegisterPage.module.css";
+import FormInput from "../components/FormInput";
+import { registerAPI } from "../api";
 
 export default function Register() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const router = useRouter();
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const togglePassword = () => setShowPassword((prev) => !prev);
-  const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
+    const togglePassword = () => setShowPassword((prev) => !prev);
+    const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
 
-  return (
-    <div className={styles.page}>
-      {/* background */}
-      <video
-        className={styles.bgVideo}
-        src="/wavebg.webm"
-        autoPlay
-        loop
-        muted
-        playsInline
-      />
+    const onRegister = async (e) => {
+        e.preventDefault();
 
-      {/* register */}
-      <div className={`${styles.loginBox} ${styles.registerBox}`}>
-        <img src="/budgielogo.png" alt="logo" className={styles.logo} />
+        const timezone = "US/East";
+        const currency = "USD";
+        const name = `${firstName} ${lastName}`;
 
-        <h2 className={styles.title}>Create Your BΰDGIE Account</h2>
-        <p className={styles.logoText}>Please fill in your details to register</p>
+        const res = await registerAPI({ email, password, name, timezone, currency });
 
-        {/* first name */}
-        <div className={styles.inputGroup}>
-          <input
-            type="text"
-            placeholder="First Name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            className={styles.input}
-          />
+        if (res.code == 0) {
+            console.log(res);
+            // router.replace("/dashboard");
+            // router.refresh();
+        } else {
+            // bad and do error handling
+        }
+    }
+
+    return (
+        <div className={styles.page}>
+            {/* background */}
+            <video
+                className={styles.bgVideo}
+                src="/wavebg.webm"
+                autoPlay
+                loop
+                muted
+                playsInline
+            />
+
+            {/* register */}
+            <div className={`${styles.loginBox} ${styles.registerBox}`}>
+                <img src="/budgielogo.png" alt="logo" className={styles.logo} />
+
+                <h2 className={styles.title}>Create Your BΰDGIE Account</h2>
+                <p className={styles.logoText}>Please fill in your details to register</p>
+
+                {/* first name */}
+                <FormInput name={"First Name"} value={firstName} setValue={setFirstName} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
+                {/* last name */}
+                <FormInput name={"Last Name"} value={lastName} setValue={setLastName} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
+                {/* email */}
+                <FormInput name={"Email"} value={email} setValue={setEmail} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
+
+                {/* password */}
+                <FormInput name={"Password"} value={password} setValue={setPassword} show={showPassword} toggleShow={togglePassword} isHidable={true} styles={styles} />
+                {/* confirm password */}
+                <FormInput name={"Confirm Password"} value={confirmPassword} setValue={setConfirmPassword} show={showConfirmPassword} toggleShow={toggleConfirmPassword} isHidable={true} styles={styles} />
+
+                {/* register button */}
+                <button className={styles.loginButton} onClick={(e) => onRegister(e)}>REGISTER</button>
+
+                {/* login redirect */}
+                <p className={styles.loginRedirectText}>
+                    Already have an account? <a href="/">Login here</a>
+                </p>
+            </div>
         </div>
-
-        {/* last name */}
-        <div className={styles.inputGroup}>
-          <input
-            type="text"
-            placeholder="Last Name"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            className={styles.input}
-          />
-        </div>
-
-        {/* email */}
-        <div className={styles.inputGroup}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={styles.input}
-          />
-        </div>
-
-        {/* password */}
-        <div className={styles.inputGroup}>
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={styles.input}
-          />
-          <button
-            type="button"
-            onClick={togglePassword}
-            className={styles.eyeButton}
-            aria-label="Toggle password visibility"
-          >
-            {showPassword ? (
-              // eye open
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="#000"
-                strokeWidth="2"
-              >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" fill="#000" />
-              </svg>
-            ) : (
-              // eye slash
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="#000"
-                strokeWidth="2"
-              >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" fill="#000" />
-                <line x1="2" y1="2" x2="22" y2="22" stroke="#000" strokeWidth="2" />
-              </svg>
-            )}
-          </button>
-        </div>
-
-        {/* confirm password */}
-        <div className={styles.inputGroup}>
-          <input
-            type={showConfirmPassword ? "text" : "password"}
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className={styles.input}
-          />
-          <button
-            type="button"
-            onClick={toggleConfirmPassword}
-            className={styles.eyeButton}
-            aria-label="Toggle confirm password visibility"
-          >
-            {showConfirmPassword ? (
-              // eye open
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="#000"
-                strokeWidth="2"
-              >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" fill="#000" />
-              </svg>
-            ) : (
-              // eye slash
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="#000"
-                strokeWidth="2"
-              >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" fill="#000" />
-                <line x1="2" y1="2" x2="22" y2="22" stroke="#000" strokeWidth="2" />
-              </svg>
-            )}
-          </button>
-        </div>
-
-        {/* register button */}
-        <button className={styles.loginButton}>REGISTER</button>
-
-        {/* login redirect */}
-        <p className={styles.loginRedirectText}>
-          Already have an account? <a href="/login">Login here</a>
-        </p>
-      </div>
-    </div>
-  );
+    );
 }
 
 

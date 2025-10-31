@@ -8,7 +8,8 @@ export default function Home() {
     const cookieStore = cookies();
     const session = cookieStore.get("session_id");
     if (session) {
-        redirect("/dashboard");
+        console.log(session);
+        // redirect("/dashboard");
     }
 
     return (
