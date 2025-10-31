@@ -32,7 +32,7 @@ export default function Register() {
       <div className={`${styles.loginBox} ${styles.registerBox}`}>
         <img src="/budgielogo.png" alt="logo" className={styles.logo} />
 
-        <h2 className={styles.title}>Create Your BUDGI:3 Account</h2>
+        <h2 className={styles.title}>Create Your BΰDGIE Account</h2>
         <p className={styles.logoText}>Please fill in your details to register</p>
 
         {/* first name */}
