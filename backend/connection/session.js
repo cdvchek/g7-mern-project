@@ -1,8 +1,8 @@
 const MongoStore = require('connect-mongo');
 
 const sess = {
-    name: process.env.SESSION_NAME || 'sid',
-    secret: process.env.SESSION_SECRET || 'change-me',
+    name: process.env.SESSION_NAME || 'session_id',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
