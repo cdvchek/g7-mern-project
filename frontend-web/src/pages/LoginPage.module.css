@@ -36,6 +36,16 @@
   margin-bottom: 40px;
 }
 
+/* logo sub text option 2 (on resetpw page)*/
+.logoTextOp2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 40px;
+  text-align: center;
+  word-wrap: break-word;
+}
+
 /* title */
 .title {
   font-size: 22px;
@@ -47,14 +57,17 @@
 /* input field group */
 .inputGroup {
   position: relative;
-  width: 100%;
+  width: 340px;
   margin-bottom: 16px;
+  margin-left: 0;
+  margin-right: auto;
+  text-align: left;
 }
 
 /* input boxes */
 .input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 12px 10px;
   border: 1px solid #d3d3d3;
   border-radius: 6px;
   font-size: 15px;
@@ -62,9 +75,31 @@
   transition: border-color 0.2s;
 }
 
-.input:focus {
-  border-color: #000;
+/* code input group */
+.codeInputGroup {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
 }
+
+/* small input box */
+.codeInputBox {
+  width: 48px;
+  height: 48px;
+  text-align: center;
+  font-size: 22px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.codeInputBox:focus {
+  border-color: #007aff;
+  box-shadow: 0 0 5px rgba(0, 122, 255, 0.3);
+}
+
 
 /* eye button */
 .iconButton {
@@ -94,6 +129,20 @@
 }
 
 .forgot:hover {
+  text-decoration: underline;
+}
+
+/* return login */
+.returnLogin {
+  align-self: center;
+  margin-top: 15px;
+  margin-bottom: 24px;
+  color: #007aff;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.returnLogin:hover {
   text-decoration: underline;
 }
 

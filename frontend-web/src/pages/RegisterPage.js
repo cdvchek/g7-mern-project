@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import styles from "./RegisterPage.module.css";
@@ -38,10 +38,19 @@ export default function Register() {
         }
     }
 
+    // video speed code
+    const videoRef = useRef(null);
+
+    useEffect(() => {
+        if (videoRef.current) {
+        videoRef.current.playbackRate = 0.7;
+        }
+    }, []);
+
     return (
         <div className={styles.page}>
-            {/* background */}
             <video
+                ref={videoRef}
                 className={styles.bgVideo}
                 src="/wavebg.webm"
                 autoPlay

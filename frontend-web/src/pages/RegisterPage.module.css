@@ -53,17 +53,20 @@
   margin-bottom: 10px;
 }
 
-/* input groups */
+/* input field group */
 .inputGroup {
   position: relative;
-  width: 100%;
+  width: 340px;
   margin-bottom: 16px;
+  margin-left: 0;
+  margin-right: auto;
+  text-align: left;
 }
 
-/* input fields */
+/* input boxes */
 .input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 12px 10px;
   border: 1px solid #d3d3d3;
   border-radius: 6px;
   font-size: 15px;

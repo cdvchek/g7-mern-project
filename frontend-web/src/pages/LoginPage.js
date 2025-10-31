@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import styles from "./LoginPage.module.css";
@@ -34,9 +34,19 @@ export default function Login() {
         }
     }
 
+    // video speed code
+    const videoRef = useRef(null);
+
+    useEffect(() => {
+        if (videoRef.current) {
+        videoRef.current.playbackRate = 0.7;
+        }
+    }, []);
+
     return (
         <div className={styles.page}>
             <video
+                ref={videoRef}
                 className={styles.bgVideo}
                 src="/wavebg.webm"
                 autoPlay
@@ -53,7 +63,7 @@ export default function Login() {
                 <FormInput name={"Email"} value={email} setValue={setEmail} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
                 <FormInput name={"Password"} value={password} setValue={setPassword} show={showPassword} toggleShow={togglePassword} isHidable={true} styles={styles} />
 
-                <a href="#" className={styles.forgot}>
+                <a href="/reset_password" className={styles.forgot}>
                     Forgot Password?
                 </a>
 
