@@ -1,8 +1,9 @@
+// Routes the envelope get requests
 const router = require('express').Router();
 const requireAuth = require('../../middleware/requireAuth');
 const { Envelope } = require('../../models');
 
-// PUT /envelopes/:id
+// Put updates to an envelope by ID
 router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for the specific route
     try {
         // Extract the envelope ID from the URL parameters
@@ -70,12 +71,13 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
 
         // Return the updated envelope
         return res.json(envelope.toSafeJSON());
+
     // If there is an error it will be caught and returned with error 500
     } catch (error) {
         console.error('Error envelope could not be updated:', error);
-        return res.status(500).json({ error: 'Internal error' });
+        return res.status(500).json({ error: 'Internal error could not be updated' });
     }
-});
+});     
 
 // End of file dont write after
 module.exports = router;

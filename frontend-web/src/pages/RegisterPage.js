@@ -1,16 +1,84 @@
-"use client"
+"use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-import InputForm from "@/components/InputForm";
+import styles from "./RegisterPage.module.css";
+import FormInput from "../components/FormInput";
+import { registerAPI } from "../api";
 
-export default function LoginPage() {
+export default function Register() {
+    const router = useRouter();
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const togglePassword = () => setShowPassword((prev) => !prev);
+    const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
+
+    const onRegister = async (e) => {
+        e.preventDefault();
+
+        const timezone = "US/East";
+        const currency = "USD";
+        const name = `${firstName} ${lastName}`;
+
+        const res = await registerAPI({ email, password, name, timezone, currency });
+
+        if (res.code == 0) {
+            console.log(res);
+            // router.replace("/dashboard");
+            // router.refresh();
+        } else {
+            // bad and do error handling
+        }
+    }
 
     return (
-        <div id="background">
-            <InputForm />
+        <div className={styles.page}>
+            {/* background */}
+            <video
+                className={styles.bgVideo}
+                src="/wavebg.webm"
+                autoPlay
+                loop
+                muted
+                playsInline
+            />
+
+            {/* register */}
+            <div className={`${styles.loginBox} ${styles.registerBox}`}>
+                <img src="/budgielogo.png" alt="logo" className={styles.logo} />
+
+                <h2 className={styles.title}>Create Your BΰDGIE Account</h2>
+                <p className={styles.logoText}>Please fill in your details to register</p>
+
+                {/* first name */}
+                <FormInput name={"First Name"} value={firstName} setValue={setFirstName} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
+                {/* last name */}
+                <FormInput name={"Last Name"} value={lastName} setValue={setLastName} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
+                {/* email */}
+                <FormInput name={"Email"} value={email} setValue={setEmail} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
+
+                {/* password */}
+                <FormInput name={"Password"} value={password} setValue={setPassword} show={showPassword} toggleShow={togglePassword} isHidable={true} styles={styles} />
+                {/* confirm password */}
+                <FormInput name={"Confirm Password"} value={confirmPassword} setValue={setConfirmPassword} show={showConfirmPassword} toggleShow={toggleConfirmPassword} isHidable={true} styles={styles} />
+
+                {/* register button */}
+                <button className={styles.loginButton} onClick={(e) => onRegister(e)}>REGISTER</button>
+
+                {/* login redirect */}
+                <p className={styles.loginRedirectText}>
+                    Already have an account? <a href="/">Login here</a>
+                </p>
+            </div>
         </div>
-    )
+    );
 }
+
+

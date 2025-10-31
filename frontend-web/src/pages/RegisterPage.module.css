@@ -1,0 +1,146 @@
+.page {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: transparent;
+  font-family: "Inter", sans-serif;
+}
+
+/* white centered box */
+.loginBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 360px;
+  padding: 40px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* adjustments for register layout */
+.registerBox .title {
+  margin-bottom: 8px;
+}
+
+.registerBox .logoText {
+  margin-bottom: 28px;
+}
+
+/* logo */
+.logo {
+  width: 120px;
+  margin-bottom: 20px;
+  display: block;
+}
+
+/* text under logo */
+.logoText {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 40px;
+}
+
+/* title */
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
+
+/* input groups */
+.inputGroup {
+  position: relative;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* input fields */
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d3d3d3;
+  border-radius: 6px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-color: #000;
+}
+
+/* eye toggle */
+.eyeButton {
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.eyeButton:hover {
+  transform: translateY(-50%) scale(1.2);
+  opacity: 0.8;
+}
+
+/* main button */
+.loginButton {
+  width: 100%;
+  padding: 12px 0;
+  background-color: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 10px;
+}
+
+.loginButton:hover {
+  background-color: #333;
+}
+
+/* bottom text */
+.loginRedirectText {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+}
+
+.loginRedirectText a {
+  color: #007aff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.loginRedirectText a:hover {
+  text-decoration: underline;
+}
+
+/* background video */
+.bgVideo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  pointer-events: none;
+}
