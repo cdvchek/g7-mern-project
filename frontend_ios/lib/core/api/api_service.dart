@@ -1,4 +1,6 @@
 // In lib/core/api/api_service.dart
+import 'dart:ffi';
+
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // Replace with your computer's IP address and backend port
   // (Do NOT use localhost, your phone simulator can't see it)
-  final String _baseUrl = 'http://172.20.7.15:3001'; // for local
+  final String _baseUrl = 'http://100.70.152.25:3001'; // for local
 
   // Helper function to save the cookie
   Future<void> saveCookie(http.Response response) async {
@@ -32,7 +34,7 @@ class ApiService {
   }
 
   // This is the Dart function that calls your Node.js route
-  Future<void> login(String email, String password) async {
+  Future<String?> login(String email, String password) async {
     // This path matches your backend API spec 
     final url = Uri.parse('$_baseUrl/api/auth/login');
 
@@ -57,19 +59,21 @@ class ApiService {
         // Save the session cookie
         await saveCookie(response);
         print('Login successful! User: $user');
+        return "success";
       } else {
         // Handle errors like 401 'Invalid credentials'
         final error = jsonDecode(response.body)['error'];
         print('Login failed: $error');
-        // TODO: Show this error to the user
+        return error;
       }
     } catch (e) {
       // Handle network errors (e.g., server is off)
       print('An error occurred: $e');
+      return e.toString();
     }
   }
 
-  Future<void> register({
+  Future<bool> register({
     required String email,
     required String password,
     String? name,
@@ -77,7 +81,7 @@ class ApiService {
     String? currency,
   }) async {
     // This path matches your backend API spec
-    final url = Uri.parse('$_baseUrl/api/register');
+    final url = Uri.parse('$_baseUrl/api/auth/register');
 
     try {
       final response = await http.post(
@@ -103,6 +107,7 @@ class ApiService {
         // Save the session cookie
         await saveCookie(response);
         print('Registration successful! User: $user');
+        return true;
       } else {
         // Handle errors like 409 'Email already in use'
         final error = jsonDecode(response.body)['error'];
@@ -113,7 +118,38 @@ class ApiService {
       // Handle network errors (e.g., server is off)
       print('An error occurred: $e');
     }
+    return false;
   }
+
+  Future<void> logout() async {
+  // Your index.js file routes this to /api/auth/logout
+  // Change this if the route in logoutRoute.js changes to "/" instead of "/logout"
+  final url = Uri.parse('$_baseUrl/api/auth/logout/logout');
+  
+  try {
+    final headers = await getAuthHeaders();
+    
+    // 2. Make the POST request to destroy the server session
+    final response = await http.post(
+      url,
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      print('Server logout successful');
+    } else {
+      print('Server logout failed: ${response.body}');
+    }
+  } catch (e) {
+    // Catch any network errors
+    print('An error occurred during logout: $e');
+  } finally {
+    // Clear the local cookie, even if the server call fails to ensure the user is logged out of the app
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('cookie');
+    print('Local cookie cleared.');
+  }
+}
 
   /*  May need to change later! */
   Future<void> getAccounts() async {

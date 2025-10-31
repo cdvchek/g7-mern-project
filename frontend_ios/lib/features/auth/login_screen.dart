@@ -1,18 +1,31 @@
 // In lib/features/auth/login_screen.dart
 import 'package:flutter/material.dart';
+import 'package:frontend_ios/features/nav_background_screen.dart';
 import 'package:frontend_ios/core/api/api_service.dart';
 import 'package:frontend_ios/features/auth/register_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final apiService = ApiService();
+
+  // Dispose of controllers when the screen is closed
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-    final apiService = ApiService(); // Create an instance
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Our Budgeting App"),
@@ -28,12 +41,14 @@ class LoginScreen extends StatelessWidget {
                 TextStyle(fontSize: 24,)),
             SizedBox(height: 30),
             TextField(
+              controller: emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
               ),
             ),
             SizedBox(height: 20),
             TextField(
+              controller: passwordController,
               obscureText: true, // This hides the password
               decoration: InputDecoration(
                 labelText: 'Password',
@@ -48,14 +63,23 @@ class LoginScreen extends StatelessWidget {
             ),
             SizedBox(height: 100),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 // Get the text from the fields
                 final email = emailController.text;
                 final password = passwordController.text;
 
-                // Call your API service!
-                apiService.login(email, password);
-                print("Login button pressed!");
+                // Wait for api service
+                String? loginStatus = await apiService.login(email, password);
+                if (loginStatus == "success" && mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NavBkgrdScreen()),
+                  );
+                  print("Logined in with $email");
+                } else {
+                  print("Login failed for $email");
+                  print("Error: $loginStatus");
+                }
               },
               child: Text('Login'),
             ),

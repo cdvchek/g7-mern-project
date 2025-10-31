@@ -2,17 +2,30 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_ios/core/api/api_service.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final apiService = ApiService();
+
+  // Dispose of controllers when the screen is closed
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-
-    final nameController = TextEditingController();
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-    final apiService = ApiService(); // Create an instance
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Our Budgeting App"),
@@ -28,18 +41,21 @@ class RegisterScreen extends StatelessWidget {
                 TextStyle(fontSize: 24,)),
             SizedBox(height: 30),
             TextField(
+              controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Name',
               ),
             ),
             SizedBox(height: 20),
             TextField(
+              controller: emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
               ),
             ),
             SizedBox(height: 20),
             TextField(
+              controller: passwordController,
               obscureText: true, // This hides the password
               decoration: InputDecoration(
                 labelText: 'Password',
@@ -68,7 +84,8 @@ class RegisterScreen extends StatelessWidget {
                   timezone: "America/New_York", // You can get this from the device
                   currency: "USD"
                 );
-                print("Register button pressed!");
+                print("Register button pressed! Email: $email" );
+                Navigator.pop(context);
               },
               child: Text('Sign Up'),
             ),

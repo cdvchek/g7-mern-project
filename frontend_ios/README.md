@@ -19,6 +19,17 @@ lib/                    # Where most of the flutter programming will be done
     ├── auth/           # Login, Register, Forgot Password screens
     ├── dashboard/      # The main dashboard screen
     ├── envelopes/      # Envelopes list, detail, and create/edit screens
-    ├── transactions/   # Transactions list and detail screens
     ├── accounts/       # Accounts management screen
     └── settings/       # Settings screen
+
+## IMPORTANT!!
+When testing the app on local, I had to add this:
+```bash
+    <key>NSAppTransportSecurity</key>
+        <dict>
+            <key>NSAllowsArbitraryLoads</key>
+            <true/>
+        </dict>
+```
+to Info.plist in /ios/Runner to allow this app to send requests via http rather than https.
+-> When we get a secure url with https, delete this bit!
