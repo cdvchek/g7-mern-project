@@ -16,6 +16,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
   final apiService = ApiService();
 
+  String? errorMessage; 
+
   // Dispose of controllers when the screen is closed
   @override
   void dispose() {
@@ -61,9 +63,20 @@ class _LoginScreenState extends State<LoginScreen> {
               },
               child: Text("Forgot Password?"),
             ),
+            if (errorMessage != null) ...[
+              SizedBox(height: 10),
+              Text(
+                errorMessage!,
+                style: TextStyle(color: Colors.red),
+              ),
+            ],
             SizedBox(height: 100),
             ElevatedButton(
               onPressed: () async {
+                setState(() {
+                  errorMessage = null; // Clear previous error message
+                });
+
                 // Get the text from the fields
                 final email = emailController.text;
                 final password = passwordController.text;
@@ -77,6 +90,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
                   print("Logined in with $email");
                 } else {
+                  setState(() {
+                    errorMessage = loginStatus; // Show error message
+                  });
                   print("Login failed for $email");
                   print("Error: $loginStatus");
                 }

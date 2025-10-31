@@ -58,22 +58,22 @@ class ApiService {
         final user = body['user'];
         // Save the session cookie
         await saveCookie(response);
-        print('Login successful! User: $user');
+        // print('Login successful! User: $user');
         return "success";
       } else {
         // Handle errors like 401 'Invalid credentials'
         final error = jsonDecode(response.body)['error'];
-        print('Login failed: $error');
+        // print('Login failed: $error');
         return error;
       }
     } catch (e) {
       // Handle network errors (e.g., server is off)
-      print('An error occurred: $e');
+      // print('An error occurred: $e');
       return e.toString();
     }
   }
 
-  Future<bool> register({
+  Future<String> register({
     required String email,
     required String password,
     String? name,
@@ -106,19 +106,19 @@ class ApiService {
         final user = body['user'];
         // Save the session cookie
         await saveCookie(response);
-        print('Registration successful! User: $user');
-        return true;
+        // print('Registration successful! User: $user');
+        return "success";
       } else {
         // Handle errors like 409 'Email already in use'
         final error = jsonDecode(response.body)['error'];
-        print('Registration failed: $error');
-        // TODO: Show this error to the user
+        // print('Registration failed: $error');
+        return error;
       }
     } catch (e) {
       // Handle network errors (e.g., server is off)
-      print('An error occurred: $e');
+      // print('An error occurred: $e');
+      return e.toString();
     }
-    return false;
   }
 
   Future<void> logout() async {

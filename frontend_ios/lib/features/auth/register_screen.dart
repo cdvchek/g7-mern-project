@@ -15,6 +15,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final passwordController = TextEditingController();
   final apiService = ApiService();
 
+  String? errorMessage;
+
   // Dispose of controllers when the screen is closed
   @override
   void dispose() {
@@ -68,24 +70,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
               },
               child: Text("Forgot Password?"),
             ),
+            if (errorMessage != null) ...[
+              SizedBox(height: 10),
+              Text(
+                errorMessage!,
+                style: TextStyle(color: Colors.red),
+              ),
+            ],
             SizedBox(height: 100),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                setState(() {
+                  errorMessage = null; // Clear previous error message
+                });
+
                 // Get the text from the fields
                 final name = nameController.text;
                 final email = emailController.text;
                 final password = passwordController.text;
 
                 // Call your API service!
-                apiService.register(
+                String? registerStatus = await apiService.register(
                   email: email,
                   password: password,
                   name: name,
                   timezone: "America/New_York", // You can get this from the device
                   currency: "USD"
                 );
-                print("Register button pressed! Email: $email" );
-                Navigator.pop(context);
+                if (registerStatus == "success" && mounted) {
+                  Navigator.pop(context);
+                  print("Registered with $email");
+                } else {
+                  setState(() {
+                    errorMessage = registerStatus; // Show error message
+                  });
+                  print("Register failed for $email");
+                  print("Error: $registerStatus");
+                }
               },
               child: Text('Sign Up'),
             ),
