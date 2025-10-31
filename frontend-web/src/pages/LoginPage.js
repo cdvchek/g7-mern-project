@@ -23,7 +23,7 @@ export default function Login() {
 
       <div className={styles.loginBox}>
         <img src="/budgielogo.png" alt="logo" className={styles.logo}/>
-        <h2 className={styles.title}>Welcome to BΰDGIE:</h2>
+        <h2 className={styles.title}>Welcome to BΰDGIE</h2>
         <p className={styles.logoText}>Please enter your login details to continue</p>
 
         <div className={styles.inputGroup}>
