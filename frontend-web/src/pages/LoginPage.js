@@ -98,7 +98,7 @@ export default function Login() {
         </div>
 
         {/* sign up button */}
-        <button className={styles.signupButton}>SIGN UP</button>
+        <button className={styles.signupButton}><a href="/register">SIGN UP</a></button>
       </div>
     </div>
   );
