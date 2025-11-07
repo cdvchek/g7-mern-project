@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { User } = require('../../models');
 const { sendMail } = require('../../util/resend');
+const { createToken, hashToken } = require('../../util/crypto');
 
 const TOKEN_TTL_MIN = Number(process.env.TOKEN_TTL_MINUTES);
 
@@ -26,6 +27,11 @@ router.post('/', async (req, res) => {
             currency: currency,
         });
 
+        const raw = createToken();
+        user.emailVerifyTokenHash = hashToken(raw);
+        user.emailVerifyTokenExp = new Date(Date.now() + TOKEN_TTL_MIN * 60 * 1000);
+        await user.save();
+
         const verifyUrl = `${process.env.APP_URL}/verify_email?token=${raw}&email=${encodeURIComponent(email)}`;
 
         // Implement our email sending service
@@ -40,10 +46,6 @@ router.post('/', async (req, res) => {
                 <p>This link expires in ${TOKEN_TTL_MIN} minutes.</p>
             `,
         });
-
-        req.session.userId = user._id.toString();
-        req.session.user = user.toSafeJSON();
-        await new Promise((resolve) => req.session.save(resolve));
 
         return res.status(201).json({ user: user.toSafeJSON() });
     } catch (err) {

@@ -12,15 +12,33 @@ const userSchema = new Schema(
             unique: true,
             index: true,
         },
-        email_verified: {
+        emailVerified: {
             type: Boolean,
             required: true,
             default: false,
+        },
+        emailVerifyTokenHash: {
+            type: String,
+            select: false,
+            index: true
+        },
+        emailVerifyTokenExp: {
+            type: Date,
+            select: false
         },
         passwordHash: {
             type: String,
             required: true,
             select: false,
+        },
+        passwordResetTokenHash: {
+            type: String,
+            select: false,
+            index: true
+        },
+        passwordResetTokenExp: {
+            type: Date,
+            select: false
         },
         name: {
             type: String,

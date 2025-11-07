@@ -9,11 +9,13 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ error: 'Email and password are required.' });
         }
 
-        const user = await User.findOne({ email: String(email).trim().toLowerCase() }).select('+passwordHash'); // ← required because select: false
+        const user = await User.findOne({ email: String(email).trim().toLowerCase() }).select('+passwordHash');
         if (!user) return res.status(401).json({ error: 'Invalid credentials.' });
 
         const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) return res.status(401).json({ error: 'Invalid credentials.' });
+
+        if (!user.emailVerified) return res.status(401).json({ error: 'Email not verified.' });
 
         req.session.userId = user._id.toString();
         req.session.user = user.toSafeJSON();

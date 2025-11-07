@@ -24,4 +24,10 @@ const decrypt = (payload) => {
 
     return pt.toString('utf8');
 }
-module.exports = { encrypt, decrypt };
+function createToken() {
+    return crypto.randomBytes(32).toString('base64url');
+}
+function hashToken(raw) {
+    return crypto.createHash('sha256').update(raw).digest('hex');
+}
+module.exports = { encrypt, decrypt, createToken, hashToken };
