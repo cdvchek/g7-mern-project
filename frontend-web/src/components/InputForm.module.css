@@ -1,3 +1,8 @@
+.formCard{
+    background-color: var(--primary);
+    width: 400px;
+    height: 550px;
+}
 .navbar {
   display:flex;
   gap:12px;
