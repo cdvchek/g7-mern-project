@@ -31,8 +31,8 @@ export default function Register() {
 
         if (res.code == 0) {
             console.log(res);
-            // router.replace("/dashboard");
-            // router.refresh();
+            // Close the form and let the user know an email was sent and they can log in after they verify their email
+            // Also say something like "Emailed verified? Login here" or something like that
         } else {
             // bad and do error handling
         }
@@ -43,7 +43,7 @@ export default function Register() {
 
     useEffect(() => {
         if (videoRef.current) {
-        videoRef.current.playbackRate = 0.7;
+            videoRef.current.playbackRate = 0.7;
         }
     }, []);
 

@@ -1,5 +1,8 @@
 const router = require('express').Router();
 const { User } = require('../../models');
+const { sendMail } = require('../../util/resend');
+
+const TOKEN_TTL_MIN = Number(process.env.TOKEN_TTL_MINUTES);
 
 router.post('/', async (req, res) => {
     try {
@@ -21,6 +24,21 @@ router.post('/', async (req, res) => {
             name: name?.trim() || '',
             timezone: timezone,
             currency: currency,
+        });
+
+        const verifyUrl = `${process.env.APP_URL}/verify_email?token=${raw}&email=${encodeURIComponent(email)}`;
+
+        // Implement our email sending service
+        await sendMail({
+            to: email,
+            subject: 'Verify your email',
+            text: `Verify your email: ${verifyUrl}`,
+            html: `
+                <p>Welcome${name ? ', ' + name : ''}!</p>
+                <p>Confirm your email address to finish setting up your account.</p>
+                <p><a href="${verifyUrl}">Verify Email</a></p>
+                <p>This link expires in ${TOKEN_TTL_MIN} minutes.</p>
+            `,
         });
 
         req.session.userId = user._id.toString();

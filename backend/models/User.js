@@ -12,6 +12,11 @@ const userSchema = new Schema(
             unique: true,
             index: true,
         },
+        email_verified: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
         passwordHash: {
             type: String,
             required: true,
