@@ -6,7 +6,7 @@ const { plaid } = require("../../connection/plaid")
 
 router.post('/', requireAuth, async (req, res) => {
 
-    
+    //asdas
 
 })
 
