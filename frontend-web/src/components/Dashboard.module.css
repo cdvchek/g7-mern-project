@@ -2,14 +2,35 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f9f9fb;
+  background: #f5f5f5;
   color: #222;
   font-family: Inter, system-ui, Arial, sans-serif;
 }
 
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.logo {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+}
+
+.appName {
+  font-size: 22px;
+  font-weight: 600;
+  color: #222;
+}
+
 .dashboardContent {
   flex: 1;
-  padding: 2rem;
+  padding: 3rem 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -17,31 +38,43 @@
 
 .navbar {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
-  padding: 1rem;
+  background: #e8e8e8;
+  border-bottom: 1px solid #d0d0d0;
+  padding: 0;
+  gap: 0;
 }
 
 .navButton {
   background: none;
   border: none;
-  font-size: 1rem;
+  font-size: 16px;
   cursor: pointer;
-  color: #555;
-  font-weight: 500;
-  transition: color 0.2s ease, border-bottom 0.2s ease;
+  color: #888;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  padding: 20px 40px;
+  transition: color 0.2s ease;
+  border-bottom: 3px solid transparent;
+  position: relative;
 }
 
 .navButton:hover {
-  color: #000;
+  color: #555;
 }
 
 .activeButton {
-  color: #007bff;
-  font-weight: 600;
-  border-bottom: 2px solid #007bff;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #222;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 20px 40px;
+  border-bottom: 3px solid #222;
+  position: relative;
 }
 
 .container {

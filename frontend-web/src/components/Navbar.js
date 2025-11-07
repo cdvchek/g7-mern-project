@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import styles from "./Dashboard.module.css";
 
 export default function Navbar({ activeTab, setActiveTab }) {
@@ -8,28 +8,28 @@ export default function Navbar({ activeTab, setActiveTab }) {
                 className={activeTab === "home" ? styles.activeButton : styles.navButton}
                 onClick={() => setActiveTab("home")}
             >
-                Home
+                DASHBOARD
             </button>
 
             <button 
                 className={activeTab === "accounts" ? styles.activeButton : styles.navButton}
                 onClick={() => setActiveTab("accounts")}
             >
-                Accounts
+                ACCOUNTS
             </button>
 
             <button 
                 className={activeTab === "envelopes" ? styles.activeButton : styles.navButton}
                 onClick={() => setActiveTab("envelopes")}
             >
-                Envelopes
+                ENVELOPES
             </button>
 
             <button 
                 className={activeTab === "transactions" ? styles.activeButton : styles.navButton}
                 onClick={() => setActiveTab("transactions")}
             >
-                Transactions
+                TRANSACTIONS
             </button>
         </nav>
     );

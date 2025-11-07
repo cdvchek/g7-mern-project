@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Navbar from "../components/Navbar";
+import Settings from "../components/Settings";
 import DashboardHome from "../components/DashboardHome";
 import DashboardAccounts from "../components/DashboardAccounts";
 import DashboardEnvelopes from "../components/DashboardEnvelopes";
@@ -10,6 +11,11 @@ import styles from "../components/Dashboard.module.css";
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState("home");
+    
+    // sample, replace with actual user data
+    const userName = "Tester McTesterson";
+    const userEmail = "test@tester.com";
+    const userInitials = "TM";
 
     const renderContent = () => {
         switch (activeTab) {
@@ -26,6 +32,20 @@ export default function Dashboard() {
 
     return (
         <div className={styles.dashboardContainer}>
+            {/* Header with App Name and User Menu */}
+            <div className={styles.header}>
+                <img 
+                    src="/budgiemail.png" 
+                    alt="App Logo" 
+                    className={styles.logo}
+                />
+                <Settings 
+                    userName={userName}
+                    userEmail={userEmail}
+                    userInitials={userInitials}
+                />
+            </div>
+            
             <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
             <div className={styles.dashboardContent}>
                 {renderContent()}
