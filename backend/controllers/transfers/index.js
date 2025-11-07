@@ -1,7 +1,8 @@
 const router = require('express').Router();
 
-router.post('/', require('./createTransferRoute'));
+router.post('/', require('./postTransferRoute'));
 router.get('/', require('./getTransfersRoute')); // All transfers
 router.get('/filtered', require('./getFilteredTransfersRoute')); // Filtered transfers
+router.put('/:id', require('./putTransferRoute'));
 
 module.exports = router;
