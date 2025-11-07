@@ -40,8 +40,8 @@ router.get('/', async(req, res) => {
 
         return res.json({
             transfers: transfers.map(transfer => transfer.toSafeJSON()),
-            count: Transfers.length,
-            filters: {frome, to} // Return applied filters for clarity
+            count: transfers.length,
+            filters: {from, to} // Return applied filters for clarity
         });
     }
     catch(err){
