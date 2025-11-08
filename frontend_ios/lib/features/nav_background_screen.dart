@@ -4,7 +4,9 @@ import 'package:frontend_ios/features/auth/login_screen.dart';
 import 'package:frontend_ios/features/dashboard_screen.dart';
 import 'package:frontend_ios/features/envelope_screens/main_envelope_screen.dart';
 import 'package:frontend_ios/features/accounts_screens/main_accounts_screen.dart';
+import 'package:frontend_ios/features/transactions_screens/transaction_screen.dart';
 import 'package:frontend_ios/features/settings_screen/settings_screen.dart';
+import 'package:frontend_ios/core/models/user.dart';
 
 class NavBkgrdScreen extends StatefulWidget {
   const NavBkgrdScreen({super.key});
@@ -16,16 +18,56 @@ class NavBkgrdScreen extends StatefulWidget {
 class _NavBkgrdScreenState extends State<NavBkgrdScreen> {
   // Currently selected tab index
   int selectedIndex = 0; 
-
   final apiService = ApiService();
+  String userInitials = "";
 
   // List of screens that nav bar will show
   static const List<Widget> _pages = <Widget>[
     DashboardScreen(), // index 0
     MainEnvelopeScreen(), // index 1
     MainAccountsScreen(), // index 2
-    SettingsScreen(), // index 3
+    TransactionScreen(), // index 3
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+  
+  Future<void> _loadUserData() async {
+    final user = await apiService.getUser();
+    if (user != null && mounted) {
+      setState(() {
+        userInitials = getInitials(user.name);
+      });
+    }
+  }
+
+  String getInitials(String? name) {
+    if (name == null || name.trim().isEmpty) {
+      return "?";
+    }
+
+    // Split the name by spaces and remove any empty parts
+    final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
+
+    if (parts.isEmpty) {
+      return "?";
+    }
+
+    if (parts.length == 1) {
+      // Only one word (e.g., "John")
+      if (parts[0].length >= 2) {
+        return parts[0].substring(0, 2).toUpperCase(); // "JO"
+      } else {
+        return parts[0].toUpperCase(); // "J"
+      }
+    } else {
+      // Two or more words (e.g., "John Doe")
+      return (parts[0][0] + parts[1][0]).toUpperCase(); // "JD"
+    }
+  }
 
   void _onTabTapped(int index) {
     setState(() {
@@ -56,7 +98,7 @@ class _NavBkgrdScreenState extends State<NavBkgrdScreen> {
           PopupMenuButton<String>(
             icon: CircleAvatar(
               // You can add a background image or icon here
-              child: Text("JZ"), // Placeholder for profile pic
+              child: Text(userInitials), // Placeholder for profile pic
               backgroundColor: Color(0xff2C2D43),
               foregroundColor: Colors.white,
             ),
@@ -65,9 +107,10 @@ class _NavBkgrdScreenState extends State<NavBkgrdScreen> {
                 _handleLogout();
               }
               else if (result == 'settings') {
-                setState(() {
-                  selectedIndex = 3; // Navigate to Settings tab
-                });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                );
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -102,8 +145,8 @@ class _NavBkgrdScreenState extends State<NavBkgrdScreen> {
           ), // Accounts Screen
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'Settings',
-          ), // Settings Screen
+            label: 'Transactions',
+          ), // Transactions Screen
         ],
         currentIndex: selectedIndex, // Highlight current tab
         onTap: _onTabTapped,     

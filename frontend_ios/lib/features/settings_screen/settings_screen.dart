@@ -243,65 +243,74 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Settings"),
+      ),
+      body: Builder(
+        builder: (context) {
+          if (isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-    if (errorMessage != null) {
-      return Center(child: Text(errorMessage!));
-    }
-    
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        buildEditableField(
-          label: "User's Name",
-          field: "name",
-          controller: nameController,
-        ),
-        buildEditableField(
-          label: "Email",
-          field: "email",
-          controller: emailController,
-        ),
-        // ListTile(
-        //   contentPadding: EdgeInsets.symmetric(horizontal: 16),
-        //   title: Text(
-        //     isEmailVerified ? "Email is verified" : "Email is not verified",
-        //     style: TextStyle(
-        //       color: isEmailVerified ? Colors.green : Colors.red, 
-        //       fontSize: 14,
-        //     ),
-        //   )
-        // ),
-        // Timezone Dropdown
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          if (errorMessage != null) {
+            return Center(child: Text(errorMessage!));
+          }
+          
+          return ListView(
+            padding: const EdgeInsets.all(20),
             children: [
-              Text("Timezone", style: Theme.of(context).textTheme.bodySmall),
-              TimezoneDropdown(
-                key: ValueKey("timezone_dropdown"),
-                hintText: "Select Timezone",
-                value: selectedTimezone,
-                 onTimezoneSelected: (timezone) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) {
-                      setState(() {
-                        selectedTimezone = timezone;
-                      });
-                      handleSave("timezone");
-                    }
-                  });
-                },
+              buildEditableField(
+                label: "User's Name",
+                field: "name",
+                controller: nameController,
+              ),
+              buildEditableField(
+                label: "Email",
+                field: "email",
+                controller: emailController,
+              ),
+              // ListTile(
+              //   contentPadding: EdgeInsets.symmetric(horizontal: 16),
+              //   title: Text(
+              //     isEmailVerified ? "Email is verified" : "Email is not verified",
+              //     style: TextStyle(
+              //       color: isEmailVerified ? Colors.green : Colors.red, 
+              //       fontSize: 14,
+              //     ),
+              //   )
+              // ),
+              // Timezone Dropdown
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Timezone", style: Theme.of(context).textTheme.bodySmall),
+                    TimezoneDropdown(
+                      key: ValueKey("timezone_dropdown"),
+                      hintText: "Select Timezone",
+                      value: selectedTimezone,
+                      onTimezoneSelected: (timezone) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            setState(() {
+                              selectedTimezone = timezone;
+                            });
+                            handleSave("timezone");
+                          }
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
             ],
-          ),
-        ),
-      ],
+          );
+        }
+      )
     );
   }
 }

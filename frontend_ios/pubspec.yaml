@@ -37,6 +37,7 @@ dependencies:
   http: ^1.5.0
   shared_preferences: ^2.5.3
   timezone_dropdown_plus: ^0.0.2
+  currency_picker: ^2.0.21
 
 dev_dependencies:
   flutter_test:
