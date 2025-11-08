@@ -13,15 +13,16 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: #aaa;
+  background: #2a2d3a;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s ease;
+  border: 2px solid #000;
 }
 
 .avatarButton:hover .avatar {
-  background: #999;
+  background: #363a4a;
 }
 
 .initials {
@@ -35,11 +36,12 @@
   top: 60px;
   right: 0;
   width: 280px;
-  background: #d5d5d5;
-  border-radius: 8px;
+  background: #f0f0f5;
+  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   overflow: hidden;
+  border: 1px solid #e0e0e5;
 }
 
 .userInfo {
@@ -47,17 +49,19 @@
   align-items: center;
   padding: 16px;
   gap: 12px;
+  background: #fff;
 }
 
 .avatarLarge {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #888;
+  background: #2a2d3a;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border: 2px solid #000;
 }
 
 .initialsLarge {
@@ -80,7 +84,7 @@
 
 .userEmail {
   font-size: 13px;
-  color: #555;
+  color: #666;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -91,7 +95,7 @@
   border: none;
   cursor: pointer;
   padding: 4px;
-  color: #555;
+  color: #5b9cff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -100,17 +104,18 @@
 }
 
 .expandButton:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(91, 156, 255, 0.1);
 }
 
 .divider {
   height: 1px;
-  background: #bbb;
-  margin: 0 16px;
+  background: #d0d0d5;
+  margin: 0;
 }
 
 .optionsSection {
   padding: 12px;
+  background: #fff;
 }
 
 .optionsLabel {
@@ -134,20 +139,21 @@
   color: #222;
   font-size: 15px;
   font-weight: 500;
-  border-radius: 6px;
-  transition: background 0.2s ease;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
   text-align: left;
 }
 
 .menuItem:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(91, 156, 255, 0.1);
+  color: #5b9cff;
 }
 
 .icon {
-  color: #555;
+  color: #666;
   flex-shrink: 0;
 }
 
 .menuItem:hover .icon {
-  color: #222;
+  color: #5b9cff;
 }
