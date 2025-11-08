@@ -1,0 +1,159 @@
+.userMenuContainer {
+  position: relative;
+}
+
+.avatarButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #2a2d3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+  border: 2px solid #000;
+}
+
+.avatarButton:hover .avatar {
+  background: #363a4a;
+}
+
+.initials {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.dropdown {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 280px;
+  background: #f0f0f5;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+  border: 1px solid #e0e0e5;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+  background: #fff;
+}
+
+.avatarLarge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #2a2d3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid #000;
+}
+
+.initialsLarge {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.userDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 2px;
+}
+
+.userEmail {
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.expandButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #5b9cff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.expandButton:hover {
+  background: rgba(91, 156, 255, 0.1);
+}
+
+.divider {
+  height: 1px;
+  background: #d0d0d5;
+  margin: 0;
+}
+
+.optionsSection {
+  padding: 12px;
+  background: #fff;
+}
+
+.optionsLabel {
+  font-size: 12px;
+  color: #666;
+  font-weight: 600;
+  padding: 8px 8px 4px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.menuItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #222;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background: rgba(91, 156, 255, 0.1);
+  color: #5b9cff;
+}
+
+.icon {
+  color: #666;
+  flex-shrink: 0;
+}
+
+.menuItem:hover .icon {
+  color: #5b9cff;
+}

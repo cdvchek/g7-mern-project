@@ -54,11 +54,23 @@ const transferSchema = new Schema(
     { timestamps: true } // Automatically adds createdAt and updatedAt
 );
 
+// Fixed/changed -- Kathlea
 transferSchema.methods.toSafeJSON = function () {
     return {
+        // new
+        id: this.id,
+        user_id: this.user_id,
+        from_envelope_id: this.from_envelope_id,
+        to_envelope_id: this.to_envelope_id,
+        amount: this.amount,
+        occured_at: this.occured_at,
+        notes: this.notes,
+        createdAt: this.createdAt,
+        updatedAt: this.updatedAt
+        /* old inside method
         id: this._id,
         name: this.name || '',
-        createdAt: this.createdAt,
+        createdAt: this.createdAt,*/
     };
 };
 

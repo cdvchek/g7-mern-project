@@ -19,4 +19,17 @@ router.delete('/me', async (req, res) => {
     }
 });
 
+router.delete('/email', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        await User.findOneAndDelete({ email: email });
+
+        return res.json({ ok: true, message: "User deleted" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ ok: false, message: "Server error" });
+    }
+});
+
 module.exports = router;

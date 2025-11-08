@@ -1,0 +1,185 @@
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f0f0f5;
+  color: #222;
+  font-family: Inter, system-ui, Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #1a1d29;
+  border-bottom: 1px solid #000;
+}
+
+.logo {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+}
+
+.appName {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.dashboardContent {
+  flex: 1;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #2a2d3a;
+  padding: 0;
+  gap: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.navButton {
+  background: none;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  color: #9a9ca5;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  padding: 18px 32px;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.navButton:hover {
+  color: #c5c7d0;
+  background: rgba(91, 156, 255, 0.08);
+}
+
+.activeButton {
+  background: rgba(91, 156, 255, 0.12);
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  color: #5b9cff;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 18px 32px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px 12px 0 0;
+}
+
+.activeButton::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: #5b9cff;
+  border-radius: 3px 3px 0 0;
+}
+
+.navIcon {
+  width: 22px;
+  height: 22px;
+  transition: transform 0.3s ease;
+}
+
+.activeButton .navIcon {
+  transform: scale(1.1);
+}
+
+.container {
+  padding: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.card {
+  width: 960px;
+  max-width: calc(100vw - 80px);
+  background: #fff;
+  color: #222;
+  padding: 22px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.sideCard {
+  width: 560px;
+  background: #fff;
+  color: #222;
+  padding: 22px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.smallCard {
+  background: #fafafa;
+  border: 1px solid #eee;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.center {
+  text-align: center;
+}
+
+.btn {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  margin: 6px;
+  font-weight: 600;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.btnPrimary {
+  background: #1a1d29;
+  color: #fff;
+}
+
+.btnPrimary:hover {
+  background: #0f1118;
+}
+
+.btnAccent {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.btnAccent:hover {
+  background: #e04244;
+}
