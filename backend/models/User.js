@@ -75,8 +75,12 @@ userSchema.methods.toSafeJSON = function () {
         id: this._id,
         email: this.email,
         name: this.name || '',
+        timezone: this.timezone,
+        currency: this.currency,
         createdAt: this.createdAt,
     };
 };
 
 module.exports = model('User', userSchema);
+
+

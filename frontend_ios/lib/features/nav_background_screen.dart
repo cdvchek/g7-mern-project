@@ -4,7 +4,7 @@ import 'package:frontend_ios/features/auth/login_screen.dart';
 import 'package:frontend_ios/features/dashboard_screen.dart';
 import 'package:frontend_ios/features/envelope_screens/main_envelope_screen.dart';
 import 'package:frontend_ios/features/accounts_screens/main_accounts_screen.dart';
-import 'package:frontend_ios/features/settings_screen.dart';
+import 'package:frontend_ios/features/settings_screen/settings_screen.dart';
 
 class NavBkgrdScreen extends StatefulWidget {
   const NavBkgrdScreen({super.key});

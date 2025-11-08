@@ -4,6 +4,7 @@ import 'dart:ffi';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend_ios/core/models/user.dart';
 
 class ApiService {
   // Replace with your computer's IP address and backend port
@@ -33,7 +34,7 @@ class ApiService {
     };
   }
 
-  // This is the Dart function that calls your Node.js route
+  // LOGIN
   Future<String?> login(String email, String password) async {
     // This path matches your backend API spec 
     final url = Uri.parse('$_baseUrl/api/auth/login');
@@ -73,6 +74,7 @@ class ApiService {
     }
   }
 
+  // REGISTER
   Future<String> register({
     required String email,
     required String password,
@@ -121,6 +123,7 @@ class ApiService {
     }
   }
 
+  // LOGOUT
   Future<void> logout() async {
   // Your index.js file routes this to /api/auth/logout
   // Change this if the route in logoutRoute.js changes to "/" instead of "/logout"
@@ -150,6 +153,73 @@ class ApiService {
     print('Local cookie cleared.');
   }
 }
+
+  // GET USER DATA
+  Future<User?> getUser() async {
+    final url = Uri.parse('$_baseUrl/api/auth/me');
+    
+    try {
+      // Add the auth headers with the cookie
+      final headers = await getAuthHeaders();
+      final response = await http.post(url, headers: headers);
+      
+      if (response.statusCode == 200) {
+        print('Got user data! ${response.body}');
+        final body = jsonDecode(response.body);
+        // Assuming backend sends { "user": { ... } }
+        final user = User.fromJson(body['user']);
+        return user;
+      } else {
+        print('Failed to get user data: ${response.body}');
+        // This will probably be a 401 Unauthorized if your cookie is wrong
+        return null;
+      }
+      
+    } catch (e) {
+      print('Error getting user data: $e');
+      return null;
+    }
+  }
+
+  // UDPATE USER DATA
+  Future<String?> updateUser({
+    String? name,
+    String? email,
+    String? timezone,
+    String? currency,
+    required String password,
+  }) async {
+    final url = Uri.parse('$_baseUrl/api/auth/me');
+    try {
+      // Add the auth headers with the cookie
+      final headers = await getAuthHeaders();
+
+      // Create a map of only the fields we want to update
+      final Map<String, dynamic> body = {
+        // Password is required to authorize changesk, so it must be in the body
+        'password': password,
+      };
+      if (name != null) body['name'] = name;
+      if (email != null) body['email'] = email;
+      if (timezone != null) body['timezone'] = timezone;
+      if (currency != null) body['currency'] = currency;
+
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode(body),
+      );
+      
+      if (response.statusCode == 200) {
+        return("success");
+      } else {
+        // Failed to update
+        return jsonDecode(response.body)['error'];
+      }
+    } catch (e) {
+      return e.toString();
+    }
+  }
 
   /*  May need to change later! */
   Future<void> getAccounts() async {
