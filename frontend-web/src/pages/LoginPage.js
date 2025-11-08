@@ -39,7 +39,7 @@ export default function Login() {
 
     useEffect(() => {
         if (videoRef.current) {
-        videoRef.current.playbackRate = 0.7;
+            videoRef.current.playbackRate = 0.7;
         }
     }, []);
 
@@ -63,7 +63,7 @@ export default function Login() {
                 <FormInput name={"Email"} value={email} setValue={setEmail} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
                 <FormInput name={"Password"} value={password} setValue={setPassword} show={showPassword} toggleShow={togglePassword} isHidable={true} styles={styles} />
 
-                <a href="/reset_password" className={styles.forgot}>
+                <a href="/forgot_password" className={styles.forgot}>
                     Forgot Password?
                 </a>
 

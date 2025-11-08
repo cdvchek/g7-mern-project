@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import styles from "./LoginPage.module.css";
-import { verifyEmailAPI } from "../api";
-import { resendEmailAPI } from "@/api/resendEmailAction";
+import { verifyEmailAPI, resendEmailAPI } from "../api";
 
 export default function VerifyEmail() {
     const searchParams = useSearchParams();
