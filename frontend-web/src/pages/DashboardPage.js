@@ -32,13 +32,14 @@ export default function Dashboard() {
 
     return (
         <div className={styles.dashboardContainer}>
-            {/* Header with App Name and User Menu */}
+            {/* Header with Logo, App Name and User Menu */}
             <div className={styles.header}>
                 <img 
                     src="/budgiemail.png" 
-                    alt="App Logo" 
+                    alt="BΰDGIE Mail Logo" 
                     className={styles.logo}
                 />
+                <div className={styles.appName}>BΰDGIE</div>
                 <Settings 
                     userName={userName}
                     userEmail={userEmail}

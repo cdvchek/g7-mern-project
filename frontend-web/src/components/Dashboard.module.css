@@ -23,9 +23,13 @@
 }
 
 .appName {
-  font-size: 22px;
-  font-weight: 600;
-  color: #222;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
 }
 
 .dashboardContent {
