@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_ios/core/api/api_service.dart';
 import 'package:timezone_dropdown_plus/timezone_dropdown_plus.dart';
+import 'package:currency_picker/currency_picker.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,7 +19,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   String? currentlyEditingField; 
   String? selectedTimezone;
-  // String? selectedCurrency;
+  String? selectedCurrency;
 
   // Controllers to hold the form values
   late final TextEditingController nameController;
@@ -63,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         emailController.text = user.email;
         isEmailVerified = user.isEmailVerified;
         selectedTimezone = user.timezone;
-        // selectedCurrency = user.currency;
+        selectedCurrency = user.currency;
         isLoading = false;
       });
     } else {
@@ -123,13 +124,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         timezone: selectedTimezone,
         password: password,
       );
+    } else if (field == "currency") {
+        result = await apiService.updateUser(
+          currency: selectedCurrency,
+          password: password,
+      );
     }
-    // } else if (fieldKey == "currency") {
-    //   error = await apiService.updateUser(
-    //     currency: currencyController.text,
-    //     password: password,
-    //   );
-    // }
 
     if (result == "success") {
       // SUCCESS!
@@ -174,6 +174,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void openCurrencyPicker() {
+    showCurrencyPicker(
+      context: context,
+      showFlag: true,
+      showCurrencyName: true,
+      showCurrencyCode: true,
+      onSelect: (Currency currency) {
+        setState(() {
+          selectedCurrency = currency.code; // e.g., "USD"
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            handleSave("currency");
+          }
+        });
+      },
     );
   }
 
@@ -272,16 +291,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 field: "email",
                 controller: emailController,
               ),
-              // ListTile(
-              //   contentPadding: EdgeInsets.symmetric(horizontal: 16),
-              //   title: Text(
-              //     isEmailVerified ? "Email is verified" : "Email is not verified",
-              //     style: TextStyle(
-              //       color: isEmailVerified ? Colors.green : Colors.red, 
-              //       fontSize: 14,
-              //     ),
-              //   )
-              // ),
               // Timezone Dropdown
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -293,6 +302,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       key: ValueKey("timezone_dropdown"),
                       hintText: "Select Timezone",
                       value: selectedTimezone,
+                      popupProps: const PopupProps.menu(
+                        showSearchBox: true,
+                        searchFieldProps: TextFieldProps(
+                          decoration: InputDecoration(
+                            labelText: 'Search Timezones',
+                          ),
+                        ),
+                      ),
                       onTimezoneSelected: (timezone) {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           if (mounted) {
@@ -307,6 +324,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
+              ListTile(
+                title: Text("Currency"),
+                subtitle: Text(selectedCurrency ?? "Not set"),
+                trailing: Icon(Icons.arrow_drop_down),
+                onTap: openCurrencyPicker,
+              )
             ],
           );
         }
