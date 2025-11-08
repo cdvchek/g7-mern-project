@@ -69,7 +69,7 @@ router.delete('/:id', async(req, res) => {
         }
         catch(err){
             await session.abortTransaction();
-            throw error;
+            throw err;
         }
         finally{
             session.endSession();
