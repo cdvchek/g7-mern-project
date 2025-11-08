@@ -9,6 +9,7 @@ import { registerAPI } from "../api";
 
 export default function Register() {
     const router = useRouter();
+
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -16,6 +17,9 @@ export default function Register() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [registeredEmail, setRegisteredEmail] = useState("");
 
     const togglePassword = () => setShowPassword((prev) => !prev);
     const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
@@ -30,11 +34,11 @@ export default function Register() {
         const res = await registerAPI({ email, password, name, timezone, currency });
 
         if (res.code == 0) {
-            console.log(res);
-            // Close the form and let the user know an email was sent and they can log in after they verify their email
-            // Also say something like "Emailed verified? Login here" or something like that
+            setRegisteredEmail(email);
+            setIsSuccess(true);
         } else {
-            // bad and do error handling
+            // handle error properly later
+            console.log("error registering", res.msg);
         }
     }
 
@@ -47,6 +51,39 @@ export default function Register() {
         }
     }, []);
 
+    // SUCCESS SCREEN
+    if (isSuccess) {
+        return (
+            <div className={styles.page}>
+                <video
+                    ref={videoRef}
+                    className={styles.bgVideo}
+                    src="/wavebg.webm"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                />
+
+                <div className={`${styles.loginBox} ${styles.registerBox}`}>
+                    <img src="/budgielogo.png" alt="logo" className={styles.logo} />
+
+                    <h2 className={styles.title}>Registration Successful!</h2>
+
+                    <p className={styles.logoText}>
+                        We’ve sent a verification email to <b>{registeredEmail}</b>.<br /><br />
+                        Please check your inbox and click the verification link before logging in.
+                    </p>
+
+                    <p className={styles.loginRedirectText}>
+                        Already verified? <a href="/">Login here</a>
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    // NORMAL REGISTER FORM
     return (
         <div className={styles.page}>
             <video
@@ -59,29 +96,21 @@ export default function Register() {
                 playsInline
             />
 
-            {/* register */}
             <div className={`${styles.loginBox} ${styles.registerBox}`}>
                 <img src="/budgielogo.png" alt="logo" className={styles.logo} />
 
                 <h2 className={styles.title}>Create Your BΰDGIE Account</h2>
                 <p className={styles.logoText}>Please fill in your details to register</p>
 
-                {/* first name */}
                 <FormInput name={"First Name"} value={firstName} setValue={setFirstName} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
-                {/* last name */}
                 <FormInput name={"Last Name"} value={lastName} setValue={setLastName} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
-                {/* email */}
                 <FormInput name={"Email"} value={email} setValue={setEmail} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
 
-                {/* password */}
                 <FormInput name={"Password"} value={password} setValue={setPassword} show={showPassword} toggleShow={togglePassword} isHidable={true} styles={styles} />
-                {/* confirm password */}
                 <FormInput name={"Confirm Password"} value={confirmPassword} setValue={setConfirmPassword} show={showConfirmPassword} toggleShow={toggleConfirmPassword} isHidable={true} styles={styles} />
 
-                {/* register button */}
                 <button className={styles.loginButton} onClick={(e) => onRegister(e)}>REGISTER</button>
 
-                {/* login redirect */}
                 <p className={styles.loginRedirectText}>
                     Already have an account? <a href="/">Login here</a>
                 </p>
@@ -89,5 +118,3 @@ export default function Register() {
         </div>
     );
 }
-
-
