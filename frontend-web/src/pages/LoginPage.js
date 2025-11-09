@@ -27,9 +27,7 @@ export default function Login() {
         console.log(res);
 
         if (res.code == 0) {
-            console.log(res);
-            // router.replace("/dashboard");
-            // router.refresh();
+            router.push("/dashboard");
         } else {
             // bad and do error handling
         }

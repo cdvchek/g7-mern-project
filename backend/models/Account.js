@@ -1,61 +1,66 @@
 // models/Account.js
-
-const { Schema, model } = require('mongoose');
-const User = require('./User');
-const bcrypt = require('bcryptjs');
+const { Schema, model, models } = require('mongoose');
 
 const accountSchema = new Schema(
-  {
-    user_id: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-    },
+    {
+        user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
 
-    plaid_item_id: {
-        type: Schema.Types.ObjectId,
-        required: true,
+        // Tie back to Plaid
+        plaid_item_id: { type: String, required: true, index: true },       // Plaid item_id (string)
+        plaid_account_id: { type: String, required: true, unique: true },   // Plaid account_id (string, stable)
 
+        // Display / identity
+        name: { type: String, trim: true, default: '', required: true },    // e.g., "Checking"
+        official_name: { type: String, trim: true, default: '' },           // bank's official label
+        mask: { type: String, trim: true, default: '' },                    // last 2–4 digits
+
+        // Classification (keep flexible; Plaid can add values)
+        type: { type: String, trim: true, default: '' },     // 'depository' | 'credit' | 'loan' | 'investment' | 'brokerage' | ...
+        subtype: { type: String, trim: true, default: '' },  // 'checking' | 'savings' | 'credit card' | ...
+
+        // Balances (cached for snappy UI; refresh via Plaid when needed)
+        balances: {
+            available: { type: Number, default: null },
+            current: { type: Number, default: null },
+            limit: { type: Number, default: null },            // for credit cards
+            iso_currency_code: { type: String, default: 'USD' },
+            unofficial_currency_code: { type: String, default: '' },
+            lastUpdatedAt: { type: Date },                     // when you last refreshed balances from Plaid
         },
 
-    plaid_account_id: {
-        type: Schema.Types.ObjectId,
-        required: true,
-
-        },
-
-    name: {
-        type: String,
-        trim: true,
-        default: '',
-        required: true,
+        // App-level flags & metadata
+        tracking: { type: Boolean, default: false },         // user toggle in UI
+        hidden: { type: Boolean, default: false },           // optional "hide from UI"
     },
-
-    // Plaid type 
-    type: {
-    type: String,
-    enum: ['depository', 'credit'],
-    
-
-    },
-
-    // Plaid type 
-    subtype: {
-        type: String,
-        enum: ['checking', 'savings', 'credit card']
-
-    },
-
-    },
-    { timestamps: true } // Automatically adds createdAt and updatedAt
+    { timestamps: true }
 );
 
+// Common queries
+accountSchema.index({ user_id: 1, plaid_item_id: 1 });
+accountSchema.index({ user_id: 1, tracking: 1 });
+
 accountSchema.methods.toSafeJSON = function () {
+    const {
+        _id, user_id, plaid_item_id, plaid_account_id, name, official_name, mask,
+        type, subtype, balances, tracking, hidden, createdAt, updatedAt
+    } = this;
+
     return {
-        id: this._id,
-        name: this.name || '',
-        createdAt: this.createdAt,
+        id: _id,
+        user_id,
+        plaid_item_id,
+        plaid_account_id,
+        name,
+        official_name,
+        mask,
+        type,
+        subtype,
+        balances,
+        tracking,
+        hidden,
+        createdAt,
+        updatedAt,
     };
 };
 
-module.exports = model('Account', accountSchema);
+module.exports = models.Account || model('Account', accountSchema);

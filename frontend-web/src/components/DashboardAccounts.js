@@ -1,82 +1,117 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./Dashboard.module.css";
-import FormInput from "./FormInput";
+import BanksList from "./BanksList";
+import BankDetail from "./BankDetail";
+// TODO: wire these to real endpoints
+// import {
+//   getMyBanksAPI,
+//   createBankAPI,
+//   getAccountsForBankAPI,
+//   setAccountTrackingAPI,
+// } from "../api";
 
-// example test acc data, to be linked with plaid later
-const sampleAccounts = [
-  { id: 1, name: "Checking", balance: 4200, type: "Checking", tracking: true },
-  { id: 2, name: "Savings", balance: 9800, type: "Savings", tracking: false },
+// fallback sample
+const sampleBanks = [
+  { id: "b1", name: "Chase", institution: "chase" },
+  { id: "b2", name: "Bank of America", institution: "bofa" },
 ];
+const sampleAccounts = {
+  b1: [
+    { id: "a1", name: "Chase Checking", type: "Checking", balance: 4200, tracking: true },
+    { id: "a2", name: "Chase Savings", type: "Savings", balance: 9800, tracking: false },
+  ],
+  b2: [
+    { id: "a3", name: "BoA Checking", type: "Checking", balance: 1500, tracking: true },
+  ],
+};
 
 export default function DashboardAccounts() {
-  const [accounts, setAccounts] = useState(sampleAccounts);
-  const [showAdd, setShowAdd] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", type: "Checking" });
+  const [banks, setBanks] = useState([]);
+  const [activeBankId, setActiveBankId] = useState(null);
+  const [accountsByBank, setAccountsByBank] = useState({}); // { bankId: Account[] }
+  const [loading, setLoading] = useState(false);
 
-  function openAdd() {
-    setEditing(null);
-    setForm({ name: "", type: "Checking" });
-    setShowAdd(true);
-  }
-  function openEdit(a) {
-    setEditing(a.id);
-    setForm({ name: a.name, type: a.type });
-    setShowAdd(true);
-  }
-  function save() {
-    if (editing) {
-      setAccounts((s) => s.map((x) => (x.id === editing ? { ...x, name: form.name, type: form.type } : x)));
-    } else {
-      setAccounts((s) => [...s, { id: Date.now(), name: form.name || "New", type: form.type, balance: 0, tracking: false }]);
+  async function fetchBanks() {
+    try {
+      setLoading(true);
+      const res = await getMyBanksAPI();
+      setBanks(res?.data ?? sampleBanks);
+    } catch {
+      setBanks(sampleBanks);
+    } finally {
+      setLoading(false);
     }
-    setShowAdd(false);
   }
-  function del(id) {
-    setAccounts((s) => s.filter((a) => a.id !== id));
+
+  async function fetchAccounts(bankId) {
+    // cache if present
+    if (accountsByBank[bankId]) return;
+    try {
+      const res = await getAccountsForBankAPI(bankId);
+      setAccountsByBank((m) => ({ ...m, [bankId]: res?.data ?? sampleAccounts[bankId] ?? [] }));
+    } catch {
+      setAccountsByBank((m) => ({ ...m, [bankId]: sampleAccounts[bankId] ?? [] }));
+    }
   }
+
+  useEffect(() => { fetchBanks(); }, []);
+
+  async function handleOpenBank(bank) {
+    setActiveBankId(bank.id);
+    await fetchAccounts(bank.id);
+  }
+
+  async function handleAddBank(payload) {
+    // optimistic add
+    const temp = { id: `tmp-${Date.now()}`, name: payload.name, institution: payload.institution || "" };
+    setBanks((b) => [...b, temp]);
+    try {
+      await createBankAPI(payload);
+      await fetchBanks();
+    } catch {
+      // roll back on error
+      setBanks((b) => b.filter((x) => x.id !== temp.id));
+    }
+  }
+
+  async function handleToggleTracking(bankId, accountId, next) {
+    // optimistic update
+    setAccountsByBank((m) => ({
+      ...m,
+      [bankId]: (m[bankId] || []).map((a) => a.id === accountId ? { ...a, tracking: next } : a),
+    }));
+    try {
+      await setAccountTrackingAPI(bankId, accountId, next);
+    } catch {
+      // rollback
+      setAccountsByBank((m) => ({
+        ...m,
+        [bankId]: (m[bankId] || []).map((a) => a.id === accountId ? { ...a, tracking: !next } : a),
+      }));
+    }
+  }
+
+  const activeBank = activeBankId ? banks.find((b) => String(b.id) === String(activeBankId)) : null;
+  const activeAccounts = activeBankId ? (accountsByBank[activeBankId] || []) : [];
 
   return (
     <div className={styles.card}>
-      <h3>Connected Bank Accounts</h3>
-      <div style={{display:"grid", gap:12, marginTop:12}}>
-        {accounts.map((a) => (
-          <div key={a.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", border:"1px solid #eee", padding:12, borderRadius:6}}>
-            <div>
-              <div style={{fontWeight:700}}>{a.name}</div>
-              <div style={{fontSize:12, color:"#666"}}>{a.type}</div>
-              <div style={{fontSize:14, marginTop:6}}>${a.balance.toLocaleString()}</div>
-            </div>
-            <div style={{display:"flex", gap:8, alignItems:"center"}}>
-              <label style={{display:"flex", gap:6, alignItems:"center", fontSize:13}}>
-                <input type="checkbox" checked={a.tracking} onChange={() => setAccounts((s)=>s.map(x=>x.id===a.id?{...x, tracking:!x.tracking}:x))} />
-                Enable Tracking
-              </label>
-              <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => openEdit(a)}>Modify</button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{marginTop:18}}>
-        <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={openAdd}>Add Account</button>
-      </div>
-
-      {showAdd && (
-        <div style={{marginTop:18, borderTop:"1px solid #eee", paddingTop:12}}>
-          <h4>{editing ? "Modify Account" : "Add Account"}</h4>
-          <FormInput label="Account Name" placeholder="Name *" value={form.name} onChange={(v)=>setForm(f=>({...f,name:v}))} />
-          <div style={{display:"flex", gap:8, alignItems:"center", marginBottom:12}}>
-            <label><input type="radio" name="type" checked={form.type==="Checking"} onChange={()=>setForm(f=>({...f,type:"Checking"}))} /> Checking</label>
-            <label><input type="radio" name="type" checked={form.type==="Savings"} onChange={()=>setForm(f=>({...f,type:"Savings"}))} /> Savings</label>
-            <label><input type="radio" name="type" checked={form.type==="Credit"} onChange={()=>setForm(f=>({...f,type:"Credit"}))} /> Credit</label>
-            <label><input type="radio" name="type" checked={form.type==="Other"} onChange={()=>setForm(f=>({...f,type:"Other"}))} /> Other</label>
-          </div>
-          <div style={{display:"flex", gap:8}}>
-            <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={save}>{editing ? "MODIFY ACCOUNT" : "ADD ACCOUNT"}</button>
-            <button className={`${styles.btn} ${styles.btnAccent}`} onClick={()=>setShowAdd(false)}>{editing ? "DELETE ACCOUNT" : "DISCARD ACCOUNT"}</button>
-          </div>
-        </div>
+      {activeBank ? (
+        <BankDetail
+          styles={styles}
+          bank={activeBank}
+          accounts={activeAccounts}
+          onBack={() => setActiveBankId(null)}
+          onToggle={(accId, next) => handleToggleTracking(activeBank.id, accId, next)}
+        />
+      ) : (
+        <BanksList
+          styles={styles}
+          banks={banks}
+          loading={loading}
+          onOpenBank={handleOpenBank}
+          onAddBank={handleAddBank}
+        />
       )}
     </div>
   );

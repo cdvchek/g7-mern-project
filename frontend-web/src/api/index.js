@@ -30,6 +30,9 @@ export const resendEmailAPI = async (body) => await hitEndpoint('POST', body, '/
 export const startPasswordResetAPI = async (body) => await hitEndpoint('POST', body, '/api/auth/forgot-password/', 'Forgot password');
 export const resetPasswordAPI = async (body) => await hitEndpoint('POST', body, '/api/auth/reset-password/', 'Reset password');
 
+export const createLinkTokenAPI = async () => await hitEndpoint('POST', null, '/api/auth/plaid/create-link-token', 'Create plaid link token');
+export const exchangeLinkTokenAPI = async (body) => await hitEndpoint('POST', body, '/api/auth/plaid/exchange-public-token', 'Exchange plaid public token');
+
 export const getEnvelopeIDAPI = async (id) => await hitEndpoint('GET', null, '/api/envelopes/get/' + id, 'Get envelope by ID');
 export const getMyEnvelopesAPI = async () => await hitEndpoint('GET', null, '/api/envelopes/get/', 'Get my envelopes');
 export const createEnvelopeAPI = async (body) => await hitEndpoint('POST', body, '/api/envelopes/post/', 'Create envelope');

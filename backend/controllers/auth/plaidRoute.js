@@ -9,7 +9,7 @@ const requireAuth = require("../../middleware/requireAuth");
 router.post('/create-link-token', requireAuth, async (req, res) => {
     try {
         const r = await plaid.linkTokenCreate({
-            user: { client_user_id: String(req.session.userId) },
+            user: { client_user_id: String(req.userId) },
             client_name: 'BucketBudget (Sandbox)',
             products: (process.env.PLAID_PRODUCTS || 'transactions').split(','),
             country_codes: (process.env.PLAID_COUNTRY_CODES || 'US').split(','),
