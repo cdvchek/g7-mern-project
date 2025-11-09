@@ -1,12 +1,15 @@
 "use client"
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./Settings.module.css";
+import { clearTokens } from "../api/tokens";
 
 export default function Settings({ userName = "Default", userEmail = "default@example.com", userInitials = "DF" }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Close menu when clicking outside
+  // close setting menu
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -24,24 +27,24 @@ export default function Settings({ userName = "Default", userEmail = "default@ex
   }, [isOpen]);
 
   const handleDashboard = () => {
-    console.log("Navigate to Dashboard");
+    router.push("/dashboard");
     setIsOpen(false);
   };
 
   const handleProfile = () => {
-    console.log("Navigate to Profile");
+    router.push("/profile");
     setIsOpen(false);
   };
 
   const handleSettings = () => {
-    console.log("Navigate to Settings");
+    router.push("/settings");
     setIsOpen(false);
   };
 
   const handleLogout = () => {
-    console.log("Logout user");
+    clearTokens();
+    router.push("/");
     setIsOpen(false);
-    // Add your logout logic here
   };
 
   return (

@@ -1,0 +1,124 @@
+.settingsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 200px);
+  padding: 40px 20px;
+  background: #f0f0f5;
+  font-family: Inter, system-ui, Arial, sans-serif;
+}
+
+.settingsBox {
+  width: 100%;
+  max-width: 560px;
+  background: #fff;
+  padding: 32px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 12px;
+  margin-top: 24px;
+}
+
+.title:first-child {
+  margin-top: 0;
+}
+
+.inputWrapper {
+  margin-bottom: 8px;
+}
+
+.inputGroup {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d3d3d3;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: #5b9cff;
+}
+
+.input::placeholder {
+  color: #999;
+}
+
+.inputGroup .input {
+  padding-right: 45px;
+}
+
+.eyeButton {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+.eyeButton:hover {
+  opacity: 0.7;
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 20px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.confirmButton {
+  width: 100%;
+  padding: 14px 0;
+  background: #1a1d29;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 32px;
+}
+
+.confirmButton:hover {
+  background: #0f1118;
+}
+
+.confirmButton:active {
+  transform: translateY(1px);
+}

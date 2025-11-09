@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Settings from "../components/Settings";
 import DashboardHome from "../components/DashboardHome";
@@ -8,14 +8,30 @@ import DashboardAccounts from "../components/DashboardAccounts";
 import DashboardEnvelopes from "../components/DashboardEnvelopes";
 import DashboardTransactions from "../components/DashboardTransactions";
 import styles from "../components/Dashboard.module.css";
+import { getUser } from "../api/tokens";
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState("home");
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const userData = getUser();
+        setUser(userData);
+    }, []);
+
+    // Extract user info with fallbacks
+    const userName = user?.name || "Guest User";
+    const userEmail = user?.email || "guest@example.com";
     
-    // sample, replace with actual user data
-    const userName = "Tester McTesterson";
-    const userEmail = "test@tester.com";
-    const userInitials = "TM";
+    // Extract initials from name
+    const getInitials = (name) => {
+        if (!name) return "GU";
+        const parts = name.trim().split(" ");
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    };
+    
+    const userInitials = getInitials(userName);
 
     const renderContent = () => {
         switch (activeTab) {
