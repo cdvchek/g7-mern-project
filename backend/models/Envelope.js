@@ -47,6 +47,7 @@ envelopeSchema.methods.toSafeJSON = function () {
         createdAt: this.createdAt,
         amount: this.amount,
         monthly_target: this.monthly_target,
+        color: this.color || '',
         order: this.order,
     };
 };

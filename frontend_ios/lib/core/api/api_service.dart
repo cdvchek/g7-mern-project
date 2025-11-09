@@ -1,80 +1,73 @@
-// In lib/core/api/api_service.dart
-import 'dart:ffi';
-
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:frontend_ios/core/models/envelope.dart';
 import 'package:frontend_ios/core/models/user.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
+  ApiService();
+
+  static const _cookieKey = 'cookie';
+  static const _accessTokenKey = 'accessToken';
+  static const _refreshTokenKey = 'refreshToken';
+  static const _accessExpiresKey = 'accessTokenExpiresAt';
+  static const _refreshExpiresKey = 'refreshTokenExpiresAt';
+
   // Replace with your computer's IP address and backend port
   // (Do NOT use localhost, your phone simulator can't see it)
   final String _baseUrl = 'http://192.168.1.180:3001'; // for local
 
-  // Helper function to save the cookie
   Future<void> saveCookie(http.Response response) async {
     final String? rawCookie = response.headers['set-cookie'];
-    if (rawCookie != null) {
-      // The cookie is usually the first part of the string
-      final String cookie = rawCookie.split(';')[0];
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('cookie', cookie);
-      print('Cookie saved: $cookie');
-    }
+    if (rawCookie == null) return;
+    final String cookie = rawCookie.split(';')[0];
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_cookieKey, cookie);
   }
 
-  // Helper function to get the cookie
   Future<Map<String, String>> getAuthHeaders() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? cookie = prefs.getString('cookie');
-
-    return {
+    final cookie = prefs.getString(_cookieKey);
+    final headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
-      'cookie': cookie ?? '', // Send the saved cookie
     };
+
+    if (cookie != null && cookie.isNotEmpty) {
+      headers['cookie'] = cookie;
+    }
+
+    final token = await _getValidAccessToken(prefs);
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    return headers;
   }
 
-  // LOGIN
   Future<String?> login(String email, String password) async {
-    // This path matches your backend API spec 
     final url = Uri.parse('$_baseUrl/api/auth/login');
-
     try {
       final response = await http.post(
         url,
-        headers: {
-          // This tells your backend you're sending JSON
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          // This becomes the `req.body` in your Node.js code
-          'email': email,
-          'password': password,
-        }),
+        headers: const {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode({'email': email, 'password': password}),
       );
 
       if (response.statusCode == 200) {
-        // Success! The backend sent back the user.
-        final body = jsonDecode(response.body);
-        final user = body['user'];
-        // Save the session cookie
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        await _persistSession(body);
         await saveCookie(response);
-        // print('Login successful! User: $user');
-        return "success";
-      } else {
-        // Handle errors like 401 'Invalid credentials'
-        final error = jsonDecode(response.body)['error'];
-        // print('Login failed: $error');
-        return error;
+        return 'success';
       }
+
+      final decoded = _tryDecode(response.body);
+      return decoded['error']?.toString() ?? 'Login failed';
     } catch (e) {
-      // Handle network errors (e.g., server is off)
-      // print('An error occurred: $e');
       return e.toString();
     }
   }
 
-  // REGISTER
   Future<String> register({
     required String email,
     required String password,
@@ -82,17 +75,13 @@ class ApiService {
     String? timezone,
     String? currency,
   }) async {
-    // This path matches your backend API spec
     final url = Uri.parse('$_baseUrl/api/auth/register');
 
     try {
       final response = await http.post(
         url,
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: const {'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode({
-          // This becomes the `req.body` in your Node.js code
           'email': email,
           'password': password,
           'name': name,
@@ -101,87 +90,52 @@ class ApiService {
         }),
       );
 
-      // Your backend returns 201 on success
       if (response.statusCode == 201) {
-        // Success! The backend sent back the new user.
-        final body = jsonDecode(response.body);
-        final user = body['user'];
-        // Save the session cookie
         await saveCookie(response);
-        // print('Registration successful! User: $user');
-        return "success";
-      } else {
-        // Handle errors like 409 'Email already in use'
-        final error = jsonDecode(response.body)['error'];
-        // print('Registration failed: $error');
-        return error;
+        return 'success';
       }
+
+      final decoded = _tryDecode(response.body);
+      return decoded['error']?.toString() ?? 'Registration failed';
     } catch (e) {
-      // Handle network errors (e.g., server is off)
-      // print('An error occurred: $e');
       return e.toString();
     }
   }
 
-  // LOGOUT
   Future<void> logout() async {
-  // Your index.js file routes this to /api/auth/logout
-  // Change this if the route in logoutRoute.js changes to "/" instead of "/logout"
-  final url = Uri.parse('$_baseUrl/api/auth/logout/logout');
-  
-  try {
-    final headers = await getAuthHeaders();
-    
-    // 2. Make the POST request to destroy the server session
-    final response = await http.post(
-      url,
-      headers: headers,
-    );
+    final url = Uri.parse('$_baseUrl/api/auth/logout');
 
-    if (response.statusCode == 200) {
-      print('Server logout successful');
-    } else {
-      print('Server logout failed: ${response.body}');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final refreshToken = prefs.getString(_refreshTokenKey);
+      await http.post(
+        url,
+        headers: const {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode({'refreshToken': refreshToken}),
+      );
+    } finally {
+      await _clearSession();
     }
-  } catch (e) {
-    // Catch any network errors
-    print('An error occurred during logout: $e');
-  } finally {
-    // Clear the local cookie, even if the server call fails to ensure the user is logged out of the app
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('cookie');
-    print('Local cookie cleared.');
   }
-}
 
-  // GET USER DATA
   Future<User?> getUser() async {
     final url = Uri.parse('$_baseUrl/api/auth/me');
-    
+
     try {
-      // Add the auth headers with the cookie
       final headers = await getAuthHeaders();
       final response = await http.post(url, headers: headers);
-      
+
       if (response.statusCode == 200) {
-        print('Got user data! ${response.body}');
-        final body = jsonDecode(response.body);
-        // Assuming backend sends { "user": { ... } }
-        final user = User.fromJson(body['user']);
-        return user;
-      } else {
-        print('Failed to get user data: ${response.body}');
-        // This will probably be a 401 Unauthorized if your cookie is wrong
-        return null;
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        return User.fromJson(body['user']);
       }
-      
-    } catch (e) {
-      print('Error getting user data: $e');
+
+      return null;
+    } catch (_) {
       return null;
     }
   }
 
-  // UDPATE USER DATA
   Future<String?> updateUser({
     String? name,
     String? email,
@@ -191,14 +145,8 @@ class ApiService {
   }) async {
     final url = Uri.parse('$_baseUrl/api/auth/me');
     try {
-      // Add the auth headers with the cookie
       final headers = await getAuthHeaders();
-
-      // Create a map of only the fields we want to update
-      final Map<String, dynamic> body = {
-        // Password is required to authorize changesk, so it must be in the body
-        'password': password,
-      };
+      final Map<String, dynamic> body = {'password': password};
       if (name != null) body['name'] = name;
       if (email != null) body['email'] = email;
       if (timezone != null) body['timezone'] = timezone;
@@ -209,37 +157,186 @@ class ApiService {
         headers: headers,
         body: jsonEncode(body),
       );
-      
+
       if (response.statusCode == 200) {
-        return("success");
-      } else {
-        // Failed to update
-        return jsonDecode(response.body)['error'];
+        return 'success';
       }
+      final decoded = _tryDecode(response.body);
+      return decoded['error']?.toString();
     } catch (e) {
       return e.toString();
     }
   }
 
-  /*  May need to change later! */
   Future<void> getAccounts() async {
-  final url = Uri.parse('$_baseUrl/api/accounts');
-  
-  try {
-    // Add the auth headers with the cookie
-    final headers = await getAuthHeaders();
-    final response = await http.get(url, headers: headers);
-    
-    if (response.statusCode == 200) {
-      print('Got accounts! ${response.body}');
-      // TODO: Decode the JSON and return the list of accounts
-    } else {
+    final url = Uri.parse('$_baseUrl/api/accounts');
+    try {
+      final headers = await getAuthHeaders();
+      final response = await http.get(url, headers: headers);
+      if (response.statusCode == 200) {
+        return;
+      }
       print('Failed to get accounts: ${response.body}');
-      // This will probably be a 401 Unauthorized if your cookie is wrong
+    } catch (e) {
+      print('Error getting accounts: $e');
     }
-    
-  } catch (e) {
-    print('Error getting accounts: $e');
   }
-}
+
+  Future<List<Envelope>> fetchEnvelopes() async {
+    final url = Uri.parse('$_baseUrl/api/envelopes/get');
+
+    try {
+      final headers = await getAuthHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as List<dynamic>;
+        return data
+            .map((item) => Envelope.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+
+      if (response.statusCode == 401) {
+        throw Exception('Session expired. Please sign in again.');
+      }
+
+      final decoded = _tryDecode(response.body);
+      throw Exception(decoded['error'] ?? 'Failed to load envelopes');
+    } catch (e) {
+      throw Exception('Failed to load envelopes: $e');
+    }
+  }
+
+  Future<Envelope> createEnvelope({
+    required String name,
+    required int amount,
+    required String colorHex,
+    int order = 0,
+  }) async {
+    final url = Uri.parse('$_baseUrl/api/envelopes/post');
+
+    try {
+      final headers = await getAuthHeaders();
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode({
+          'name': name,
+          'amount': amount,
+          'color': colorHex,
+          'order': order,
+        }),
+      );
+
+      final body = response.body.isNotEmpty
+          ? jsonDecode(response.body) as Map<String, dynamic>
+          : <String, dynamic>{};
+
+      if (response.statusCode == 200) {
+        return Envelope.fromJson(body);
+      }
+      if (response.statusCode == 401) {
+        throw Exception('Session expired. Please sign in again.');
+      }
+      throw Exception(body['error']?.toString() ?? 'Failed to create envelope');
+    } catch (e) {
+      throw Exception('Failed to create envelope: $e');
+    }
+  }
+
+  Map<String, dynamic> _tryDecode(String raw) {
+    if (raw.isEmpty) return <String, dynamic>{};
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      return <String, dynamic>{};
+    }
+  }
+
+  Future<void> _persistSession(Map<String, dynamic> body) async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = body['accessToken'] as String?;
+    final refreshToken = body['refreshToken'] as String?;
+    final accessExpires = _normalizeExpiryMillis(
+      absolute: body['accessTokenExpiresAt'],
+      relativeSeconds: body['accessTokenExpiresIn'],
+    );
+    final refreshExpires = _normalizeExpiryMillis(
+      absolute: body['refreshTokenExpiresAt'],
+      relativeSeconds: body['refreshTokenExpiresIn'],
+    );
+
+    if (accessToken != null) {
+      await prefs.setString(_accessTokenKey, accessToken);
+    }
+    if (refreshToken != null) {
+      await prefs.setString(_refreshTokenKey, refreshToken);
+    }
+    if (accessExpires != null) {
+      await prefs.setInt(_accessExpiresKey, accessExpires);
+    }
+    if (refreshExpires != null) {
+      await prefs.setInt(_refreshExpiresKey, refreshExpires);
+    }
+  }
+
+  Future<void> _clearSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_cookieKey);
+    await prefs.remove(_accessTokenKey);
+    await prefs.remove(_refreshTokenKey);
+    await prefs.remove(_accessExpiresKey);
+    await prefs.remove(_refreshExpiresKey);
+  }
+
+  Future<String?> _getValidAccessToken(SharedPreferences prefs) async {
+    final token = prefs.getString(_accessTokenKey);
+    final expiresAt = prefs.getInt(_accessExpiresKey);
+    final now = DateTime.now().millisecondsSinceEpoch + 5000;
+
+    if (token != null && expiresAt != null && expiresAt > now) {
+      return token;
+    }
+
+    final refreshed = await _refreshAccessToken(prefs);
+    if (refreshed != null && refreshed.isNotEmpty) {
+      return refreshed;
+    }
+
+    throw Exception('Session expired. Please sign in again.');
+  }
+
+  Future<String?> _refreshAccessToken(SharedPreferences prefs) async {
+    final refreshToken = prefs.getString(_refreshTokenKey);
+    if (refreshToken == null || refreshToken.isEmpty) {
+      return null;
+    }
+
+    final url = Uri.parse('$_baseUrl/api/auth/refresh');
+    final response = await http.post(
+      url,
+      headers: const {'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode({'refreshToken': refreshToken}),
+    );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      await _persistSession(body);
+      return body['accessToken'] as String?;
+    }
+
+    await _clearSession();
+    throw Exception('Session expired. Please sign in again.');
+  }
+
+  int? _normalizeExpiryMillis({dynamic absolute, dynamic relativeSeconds}) {
+    if (absolute is num) {
+      return absolute.toInt();
+    }
+    if (relativeSeconds is num) {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      return now + (relativeSeconds * 1000).round();
+    }
+    return null;
+  }
 }
