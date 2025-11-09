@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:frontend_ios/core/models/envelope.dart';
+import 'package:frontend_ios/core/models/transfer.dart';
 import 'package:frontend_ios/core/models/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -304,6 +305,91 @@ class ApiService {
       throw Exception(body['error']?.toString() ?? 'Failed to delete envelope');
     } catch (e) {
       throw Exception('Failed to delete envelope: $e');
+    }
+  }
+
+  Future<TransferActionResult> transferFunds({
+    required String fromEnvelopeId,
+    required String toEnvelopeId,
+    required int amount,
+    String? notes,
+  }) async {
+    final url = Uri.parse('$_baseUrl/api/transfers');
+
+    try {
+      final headers = await getAuthHeaders();
+      final payload = <String, dynamic>{
+        'from_envelope_id': fromEnvelopeId,
+        'to_envelope_id': toEnvelopeId,
+        'amount': amount,
+      };
+      if (notes != null && notes.trim().isNotEmpty) {
+        payload['notes'] = notes.trim();
+      }
+
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(payload),
+      );
+
+      final body = response.body.isNotEmpty
+          ? jsonDecode(response.body) as Map<String, dynamic>
+          : <String, dynamic>{};
+
+      if (response.statusCode == 201) {
+        return TransferActionResult.fromJson(body);
+      }
+      if (response.statusCode == 401) {
+        throw Exception('Session expired. Please sign in again.');
+      }
+      throw Exception(body['error']?.toString() ?? 'Failed to transfer funds');
+    } catch (e) {
+      throw Exception('Failed to transfer funds: $e');
+    }
+  }
+
+  Future<List<Transfer>> fetchTransfersForEnvelope(String envelopeId) async {
+    final transfers = await _fetchAllTransfers();
+
+    final filtered = transfers
+        .where((transfer) =>
+            transfer.fromEnvelope.id == envelopeId || transfer.toEnvelope.id == envelopeId)
+        .toList();
+
+    filtered.sort((a, b) {
+      final aDate = a.createdAt ?? a.occuredAt;
+      final bDate = b.createdAt ?? b.occuredAt;
+      if (aDate == null && bDate == null) return 0;
+      if (aDate == null) return 1;
+      if (bDate == null) return -1;
+      return bDate.compareTo(aDate);
+    });
+
+    return filtered;
+  }
+
+  Future<List<Transfer>> _fetchAllTransfers() async {
+    try {
+      final headers = await getAuthHeaders();
+      final url = Uri.parse('$_baseUrl/api/transfers');
+      final response = await http.get(url, headers: headers);
+      final body = response.body.isNotEmpty
+          ? jsonDecode(response.body) as Map<String, dynamic>
+          : <String, dynamic>{};
+
+      if (response.statusCode == 200) {
+        final rawTransfers = body['transfers'] as List<dynamic>? ?? const <dynamic>[];
+        return rawTransfers
+            .map((item) => Transfer.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+      if (response.statusCode == 401) {
+        throw Exception('Session expired. Please sign in again.');
+      }
+      throw Exception(body['error']?.toString() ?? 'Failed to load transfers');
+    } catch (e) {
+      throw Exception('Failed to load transfers: $e');
     }
   }
 

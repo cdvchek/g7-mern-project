@@ -4,6 +4,7 @@ import 'package:frontend_ios/core/models/envelope.dart';
 import 'package:frontend_ios/features/envelope_screens/create_envelope.dart';
 import 'package:frontend_ios/features/envelope_screens/detail_envelope_page.dart';
 import 'package:frontend_ios/features/envelope_screens/edit_delete_envelope.dart';
+import 'package:frontend_ios/features/envelope_screens/transfer_envelope.dart';
 
 class MainEnvelopeScreen extends StatefulWidget {
   const MainEnvelopeScreen({super.key});
@@ -117,6 +118,29 @@ class _MainEnvelopeScreenState extends State<MainEnvelopeScreen> {
     }
   }
 
+  Future<void> _handleTransferTap({Envelope? from}) async {
+    if (_envelopes.length < 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Create at least two envelopes to transfer funds.')),
+      );
+      return;
+    }
+
+    final result = await showTransferEnvelopeSheet(
+      context,
+      envelopes: _envelopes,
+      initialFrom: from,
+    );
+
+    if (result != null) {
+      await _loadEnvelopes();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.message ?? 'Transfer completed')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -144,7 +168,7 @@ class _MainEnvelopeScreenState extends State<MainEnvelopeScreen> {
                   _PrimaryActionButton(
                     label: 'Transfer Funds',
                     icon: Icons.sync_alt,
-                    onPressed: () {},
+                    onPressed: () => _handleTransferTap(),
                     width: 180,
                   ),
                 ],

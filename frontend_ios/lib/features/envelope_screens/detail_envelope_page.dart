@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_ios/core/api/api_service.dart';
 import 'package:frontend_ios/core/models/envelope.dart';
+import 'package:frontend_ios/core/models/transfer.dart';
 import 'package:frontend_ios/features/envelope_screens/edit_delete_envelope.dart';
 
 class DetailEnvelopePage extends StatefulWidget {
@@ -18,18 +19,15 @@ class _DetailEnvelopePageState extends State<DetailEnvelopePage> {
   String? _errorMessage;
   final _apiService = ApiService();
   bool _hasChanges = false;
-
-  static const _mockTransactions = <_EnvelopeTransaction>[
-    _EnvelopeTransaction(name: 'Paycheck Deposit', amount: 250, incoming: true),
-    _EnvelopeTransaction(name: 'Grocery Run', amount: -120, incoming: false),
-    _EnvelopeTransaction(name: 'Farmers Market', amount: -45, incoming: false),
-    _EnvelopeTransaction(name: 'Cash Stuffing', amount: 60, incoming: true),
-  ];
+  List<Transfer> _transfers = const [];
+  bool _isTransfersLoading = true;
+  String? _transfersError;
 
   @override
   void initState() {
     super.initState();
     _envelope = widget.envelope;
+    _loadTransfers();
   }
 
   Future<void> _handleEdit() async {
@@ -102,6 +100,30 @@ class _DetailEnvelopePageState extends State<DetailEnvelopePage> {
     }
   }
 
+  Future<void> _loadTransfers() async {
+    setState(() {
+      _isTransfersLoading = true;
+      _transfersError = null;
+    });
+
+    try {
+      final transfers = await _apiService.fetchTransfersForEnvelope(_envelope.id);
+      if (!mounted) return;
+      setState(() {
+        _transfers = transfers;
+        _isTransfersLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        final cleaned = e.toString().replaceFirst(RegExp(r'^Exception: ?'), '');
+        _transfersError = cleaned.isEmpty ? 'Unable to load transfers.' : cleaned;
+        _isTransfersLoading = false;
+      });
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final accent = _resolveColor(_envelope.color);
@@ -153,11 +175,12 @@ class _DetailEnvelopePageState extends State<DetailEnvelopePage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.center,
                       children: [
                         _PrimaryPillButton(label: 'Edit', onPressed: _handleEdit),
-                        const SizedBox(width: 16),
                         _PrimaryPillButton(
                           label: 'Delete',
                           onPressed: _isDeleting ? null : _handleDelete,
@@ -213,24 +236,11 @@ class _DetailEnvelopePageState extends State<DetailEnvelopePage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: const Color(0xFFE3E6F0)),
-                      ),
-                      child: Column(
-                        children: _mockTransactions
-                            .map((tx) => _TransactionTile(transaction: tx))
-                            .toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    const Text(
-                      'Transfers will populate here once implemented.',
-                      style: TextStyle(color: Color(0xFF7C8097), fontSize: 13),
-                      textAlign: TextAlign.center,
+                    _TransferListCard(
+                      isLoading: _isTransfersLoading,
+                      errorMessage: _transfersError,
+                      transfers: _transfers.take(4).toList(),
+                      envelopeId: _envelope.id,
                     ),
                   ],
                 ),
@@ -303,43 +313,134 @@ class _PrimaryPillButton extends StatelessWidget {
   }
 }
 
-class _EnvelopeTransaction {
-  const _EnvelopeTransaction({
-    required this.name,
-    required this.amount,
-    required this.incoming,
+class _TransferListCard extends StatelessWidget {
+  const _TransferListCard({
+    required this.isLoading,
+    required this.errorMessage,
+    required this.transfers,
+    required this.envelopeId,
   });
 
-  final String name;
-  final num amount;
-  final bool incoming;
-}
-
-class _TransactionTile extends StatelessWidget {
-  const _TransactionTile({required this.transaction});
-
-  final _EnvelopeTransaction transaction;
+  final bool isLoading;
+  final String? errorMessage;
+  final List<Transfer> transfers;
+  final String envelopeId;
 
   @override
   Widget build(BuildContext context) {
-    final color = transaction.incoming ? const Color(0xFF0F9D58) : const Color(0xFFB91C1C);
-    final symbol = transaction.incoming ? '+' : '-';
+    Widget child;
+
+    if (isLoading) {
+      child = const SizedBox(
+        height: 100,
+        child: Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E1F3D)),
+          ),
+        ),
+      );
+    } else if (errorMessage != null) {
+      child = Text(
+        errorMessage!,
+        style: const TextStyle(color: Color(0xFFB91C1C)),
+        textAlign: TextAlign.center,
+      );
+    } else if (transfers.isEmpty) {
+      child = const Text(
+        'No transfers yet.',
+        style: TextStyle(color: Color(0xFF7C8097)),
+        textAlign: TextAlign.center,
+      );
+    } else {
+      child = Column(
+        children: [
+          for (int i = 0; i < transfers.length; i++) ...[
+            _TransferTile(
+              transfer: transfers[i],
+              envelopeId: envelopeId,
+            ),
+            if (i != transfers.length - 1)
+              const Divider(
+                color: Color(0xFFE3E6F0),
+                height: 12,
+                thickness: 1,
+              ),
+          ],
+        ],
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE3E6F0)),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _TransferTile extends StatelessWidget {
+  const _TransferTile({required this.transfer, required this.envelopeId});
+
+  final Transfer transfer;
+  final String envelopeId;
+
+  @override
+  Widget build(BuildContext context) {
+    final isIncoming = transfer.toEnvelope.id == envelopeId;
+    final color = isIncoming ? const Color(0xFF0F9D58) : const Color(0xFFB91C1C);
+    final counterpart = isIncoming ? transfer.fromEnvelope : transfer.toEnvelope;
+    final counterpartName =
+        counterpart.name != null && counterpart.name!.isNotEmpty ? counterpart.name! : 'Envelope';
+    final directionLabel = isIncoming ? 'From $counterpartName' : 'To $counterpartName';
+    final amountValue = transfer.amount.abs().toDouble().toStringAsFixed(2);
+    final subtitleParts = <String>[];
+    if (transfer.notes != null && transfer.notes!.trim().isNotEmpty) {
+      subtitleParts.add(transfer.notes!.trim());
+    }
+    final dateLabel = _formatTransferDate(transfer.occuredAt ?? transfer.createdAt);
+    if (dateLabel != null) {
+      subtitleParts.add(dateLabel);
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Text(
-              '${transaction.name} (${transaction.incoming ? '+' : '-'})',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  directionLabel,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E1F3D),
+                  ),
+                ),
+                if (subtitleParts.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      subtitleParts.join(' • '),
+                      style: const TextStyle(
+                        color: Color(0xFF7C8097),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
+          const SizedBox(width: 16),
           Text(
-            '$symbol \$${transaction.amount.abs().toStringAsFixed(2)}',
+            '${isIncoming ? '+' : '-'} \$$amountValue',
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.w600,
@@ -349,4 +450,12 @@ class _TransactionTile extends StatelessWidget {
       ),
     );
   }
+}
+
+String? _formatTransferDate(DateTime? date) {
+  if (date == null) return null;
+  final month = date.month.toString().padLeft(2, '0');
+  final day = date.day.toString().padLeft(2, '0');
+  final year = date.year.toString();
+  return '$month/$day/$year';
 }
