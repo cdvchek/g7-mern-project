@@ -374,20 +374,47 @@ class _EnvelopeSketchPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final outlinePaint = Paint()
-      ..color = strokeColor.withOpacity(0.25)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+    final baseRect = RRect.fromLTRBR(0, 0, size.width, size.height, const Radius.circular(18));
+    final fillPaint = Paint()
+      ..color = strokeColor.withOpacity(0.12)
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(baseRect, fillPaint);
 
-    final linePaint = Paint()
+    final borderPaint = Paint()
       ..color = strokeColor.withOpacity(0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
+    canvas.drawRRect(baseRect, borderPaint);
 
-    final rect = RRect.fromLTRBR(0, 0, size.width, size.height, const Radius.circular(18));
-    canvas.drawRRect(rect, outlinePaint);
-    canvas.drawLine(const Offset(0, 0), Offset(size.width, size.height), linePaint);
-    canvas.drawLine(Offset(0, size.height), Offset(size.width, 0), linePaint);
+    final flapPaint = Paint()
+      ..color = strokeColor.withOpacity(0.25)
+      ..style = PaintingStyle.fill;
+    final flapPath = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width / 2, size.height * 0.55)
+      ..lineTo(size.width, 0)
+      ..close();
+    canvas.drawPath(flapPath, flapPaint);
+
+    final lipShadowPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.white.withOpacity(0.1),
+          strokeColor.withOpacity(0.2),
+        ],
+      ).createShader(Rect.fromLTWH(0, size.height * 0.45, size.width, size.height * 0.15));
+    canvas.drawRRect(
+      RRect.fromLTRBR(
+        4,
+        size.height * 0.5,
+        size.width - 4,
+        size.height - 4,
+        const Radius.circular(16),
+      ),
+      lipShadowPaint,
+    );
   }
 
   @override
