@@ -24,6 +24,7 @@ export default function Login() {
         }
 
         const res = await loginAPI({ email, password });
+        console.log(res);
 
         if (res.code == 0) {
             console.log(res);

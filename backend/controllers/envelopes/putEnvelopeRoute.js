@@ -59,7 +59,7 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
 
         // Update the envelope
         const envelope = await Envelope.findOneAndUpdate(
-            { _id: id, user_id: req.session.userId },
+            { _id: id, user_id: req.userId },
             { $set: updates },
             { new: true }
         );
@@ -72,12 +72,12 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
         // Return the updated envelope
         return res.json(envelope.toSafeJSON());
 
-    // If there is an error it will be caught and returned with error 500
+        // If there is an error it will be caught and returned with error 500
     } catch (error) {
         console.error('Error envelope could not be updated:', error);
         return res.status(500).json({ error: 'Internal error could not be updated' });
     }
-});     
+});
 
 // End of file dont write after
 module.exports = router;

@@ -3,38 +3,36 @@ const requireAuth = require('../../middleware/requireAuth');
 const { Transfer, Envelope } = require('../../models');
 const mongoose = require('mongoose');
 
-router.use(requireAuth);
-
-router.post('/', async(req, res) => {
-    try{
+router.post('/', requireAuth, async (req, res) => {
+    try {
         const { from_envelope_id, to_envelope_id, amount, notes } = req.body || {};
-        const user_id = req.session.userId;
+        const user_id = req.userId;
 
         // Validating required fields
-        if(!from_envelope_id || !to_envelope_id || !amount){
-            return res.status(400).json({error: 'From envelope, to envelope, and amount are required.'});
+        if (!from_envelope_id || !to_envelope_id || !amount) {
+            return res.status(400).json({ error: 'From envelope, to envelope, and amount are required.' });
         }
 
         // Validating amount is positive integer
-        if (!Number.isInteger(amount) || amount <= 0){
-            return res.status(400).json({error: 'Amount must be a positive integer.'});
+        if (!Number.isInteger(amount) || amount <= 0) {
+            return res.status(400).json({ error: 'Amount must be a positive integer.' });
         }
 
         // prevent transferring to same envelope
-        if (from_envelope_id === to_envelope_id){
-            return res.status(400).json({error: 'Cannont transfer to the same envelope.'});
+        if (from_envelope_id === to_envelope_id) {
+            return res.status(400).json({ error: 'Cannont transfer to the same envelope.' });
         }
 
         // Validating ObjectIds
-        if(!mongoose.Types.ObjectId.isValid(from_envelope_id) || !mongoose.Types.ObjectId.isValid(to_envelope_id)){
-            return res.status(400).json({error: 'Invalid envelope ID.'});
-        } 
+        if (!mongoose.Types.ObjectId.isValid(from_envelope_id) || !mongoose.Types.ObjectId.isValid(to_envelope_id)) {
+            return res.status(400).json({ error: 'Invalid envelope ID.' });
+        }
 
         // Start a session for transaction
         const session = await mongoose.startSession();
         session.startTransaction();
 
-        try{
+        try {
             // get both envelopes with locking to prevent race conditions
             const fromEnvelope = await Envelope.findOne({
                 _id: from_envelope_id,
@@ -47,28 +45,28 @@ router.post('/', async(req, res) => {
             }).session(session);
 
             // Check if envelopes exists and belong to user
-            if (!fromEnvelope){
+            if (!fromEnvelope) {
                 await session.abortTransaction();
-                return res.status(404).json({error: 'Source envelope not found.'});
+                return res.status(404).json({ error: 'Source envelope not found.' });
             }
 
-            if(!toEnvelope){
+            if (!toEnvelope) {
                 await session.abortTransaction();
-                return res.status(404).json({error: 'Destination envelope not found.'});
+                return res.status(404).json({ error: 'Destination envelope not found.' });
             }
 
             // Check if source envelope has sufficent funds
-            if(fromEnvelope.amount < amount){
+            if (fromEnvelope.amount < amount) {
                 await session.abortTransaction();
-                return res.status(400).json({ error: 'Insufficient funds in source envelope.'});
+                return res.status(400).json({ error: 'Insufficient funds in source envelope.' });
             }
 
             // Update envelope amounts
             fromEnvelope.amount = fromEnvelope.amount - amount;
             toEnvelope.amount = toEnvelope.amount + amount;
 
-            await fromEnvelope.save({session});
-            await toEnvelope.save({session});
+            await fromEnvelope.save({ session });
+            await toEnvelope.save({ session });
 
             // Creating the transfer record (using the exact field names from the model)
             const transfer = await Transfer.create([{
@@ -78,7 +76,7 @@ router.post('/', async(req, res) => {
                 amount: amount,
                 occured_at: new Date(),
                 notes: notes || ''
-            }],{session});
+            }], { session });
 
             // Commit the transaction transfer
             await session.commitTransaction();
@@ -90,18 +88,18 @@ router.post('/', async(req, res) => {
                 message: 'Transfer completed successfully.'
             })
         }
-        catch(error){
+        catch (error) {
             // If anything fails, abort the transaction
             await session.abortTransaction();
             throw error;
         }
-        finally{
+        finally {
             session.endSession();
         }
     }
-    catch (err){
-        console.error('[create-transfer]',err);
-        return res.status(500).json({error: 'Server error during transfer.'});
+    catch (err) {
+        console.error('[create-transfer]', err);
+        return res.status(500).json({ error: 'Server error during transfer.' });
     }
 
 });

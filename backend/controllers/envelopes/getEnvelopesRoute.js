@@ -4,15 +4,15 @@ const requireAuth = require('../../middleware/requireAuth');
 const { Envelope } = require('../../models');
 
 // Get all envelopes for the logged-in user
-router.get('/',requireAuth, async (req, res) => { // Added requireAuth for the specific route
+router.get('/', requireAuth, async (req, res) => { // Added requireAuth for the specific route
     try {
         // Tries to grab the id of the user that's logged in
-        const userId = req.session.userId;
+        const userId = req.userId;
         const envelopes = await Envelope.find({ user_id: userId }).sort({ order: 1, createdAt: 1 });
         const safeEnvelopes = envelopes.map(envelope => envelope.toSafeJSON());
         return res.json(safeEnvelopes);
 
-    // If there is an error getting the envelope it will be caught and returned with error 500
+        // If there is an error getting the envelope it will be caught and returned with error 500
     } catch (error) {
         console.error("Error fetching envelopes:", error);
         return res.status(500).json({ error: 'Internal error could not grab envelopes' });
@@ -23,7 +23,7 @@ router.get('/',requireAuth, async (req, res) => { // Added requireAuth for the s
 router.get('/:id', async (req, res) => {
     try {
         // Tries to grab the id of the user that's logged in
-        const userId = req.session.userId;
+        const userId = req.userId;
         const envelopeId = req.params.id;
 
         // Validate envelopeId is a valid ObjectId
@@ -42,13 +42,13 @@ router.get('/:id', async (req, res) => {
 
         // Return the safe JSON representation of the envelope
         return res.json(envelope.toSafeJSON());
-        
-    // If there is an error getting the envelope it will be caught and returned with error 500
+
+        // If there is an error getting the envelope it will be caught and returned with error 500
     } catch (error) {
         console.error("Error getting the envelope:", error);
         return res.status(500).json({ error: 'Internal error could not grab envelope' });
     }
-}); 
+});
 
 /// End of file dont write after
 module.exports = router;

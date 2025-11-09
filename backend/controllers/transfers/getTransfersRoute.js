@@ -3,11 +3,9 @@ const requireAuth = require('../../middleware/requireAuth');
 const { Transfer } = require('../../models');
 const mongoose = require('mongoose');
 
-router.use(requireAuth);
-
-router.get('/', async(req, res) => {
-    try{
-        const user_id = req.session.userId;
+router.get('/', requireAuth, async (req, res) => {
+    try {
+        const user_id = req.userId;
 
         // Getting ALL transfers (no filtering)
         const transfers = await Transfer.find({ user_id })
@@ -20,9 +18,9 @@ router.get('/', async(req, res) => {
             count: transfers.length
         });
     }
-    catch(err){
+    catch (err) {
         console.error('[get-transfers]', err);
-        return res.status(500).json({ error: 'Server error while fetching transfers.'});
+        return res.status(500).json({ error: 'Server error while fetching transfers.' });
     }
 });
 

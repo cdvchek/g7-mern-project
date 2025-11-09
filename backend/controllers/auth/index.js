@@ -8,5 +8,6 @@ router.use("/me", require('./meRoute'));
 router.use("/verify-email", require('./verifyEmailRoute'));
 router.use("/forgot-password", require("./forgotPasswordRoute"));
 router.use("/reset-password", require("./resetPasswordRoute"));
+router.use("/refresh", require('./refreshRoute'));
 
 module.exports = router;

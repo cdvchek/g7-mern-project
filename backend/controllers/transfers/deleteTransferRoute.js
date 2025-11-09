@@ -3,11 +3,9 @@ const requireAuth = require('../../middleware/requireAuth');
 const { Transfer, Envelope } = require('../../models');
 const mongoose = require('mongoose');
 
-router.use(requireAuth);
-
-router.delete('/:id', async(req, res) => {
-    try{
-        const user_id = req.session.userId;
+router.delete('/:id', requireAuth, async (req, res) => {
+    try {
+        const user_id = req.userId;
         const transferId = req.params.id;
 
         // Validating transfer ID
@@ -19,20 +17,20 @@ router.delete('/:id', async(req, res) => {
         const session = await mongoose.startSession();
         session.startTransaction();
 
-        try{
+        try {
             // Find the transfer with envelope population
             const transfer = await Transfer.findOne({
                 _id: transferId,
                 user_id: user_id
             })
-            .populate('from_envelope_id', 'name amount')
-            .populate('to_envelope_id', 'name amount')
-            .session(session);
+                .populate('from_envelope_id', 'name amount')
+                .populate('to_envelope_id', 'name amount')
+                .session(session);
 
             // Checking if transfer exist
-            if(!transfer){
+            if (!transfer) {
                 await session.abortTransaction();
-                return res.status(404).json({error: 'Transfer not Found.'});
+                return res.status(404).json({ error: 'Transfer not Found.' });
             }
 
             // Reverse the transfer amounts on envelopes
@@ -51,11 +49,11 @@ router.delete('/:id', async(req, res) => {
             toEnvelope.amount = toEnvelope.amount - transfer.amount;
 
             // Save envelope updates
-            await fromEnvelope.save({session});
-            await toEnvelope.save({session});
+            await fromEnvelope.save({ session });
+            await toEnvelope.save({ session });
 
             // Delete the transfer record
-            await Transfer.deleteOne({_id: transferId}).session(session);
+            await Transfer.deleteOne({ _id: transferId }).session(session);
 
             // Commit the transaction
             await session.commitTransaction();
@@ -67,17 +65,17 @@ router.delete('/:id', async(req, res) => {
                 to_envelope: toEnvelope.toSafeJSON()
             });
         }
-        catch(err){
+        catch (err) {
             await session.abortTransaction();
             throw err;
         }
-        finally{
+        finally {
             session.endSession();
         }
     }
-    catch(err){
+    catch (err) {
         console.error('[delete-transfer', err);
-        return res.status(500).json({error: 'Server error while deleting transfer.'});
+        return res.status(500).json({ error: 'Server error while deleting transfer.' });
     }
 });
 

@@ -3,28 +3,26 @@ const requireAuth = require('../../middleware/requireAuth');
 const { Transfer } = require('../../models');
 const mongoose = require('mongoose');
 
-router.use(requireAuth);
-
-router.put('/:id', async(req,res) => {
-    try{
-        const user_id = req.session.userId;
+router.put('/:id', requireAuth, async (req, res) => {
+    try {
+        const user_id = req.userId;
         const transferId = req.params.id;
-        const {notes} = req.body || {};
+        const { notes } = req.body || {};
 
         // Validating transfer ID
-        if(!mongoose.Types.ObjectId.isValid(transferId)){
-            return res.status(400).json({error: 'Invalid transfer ID.'});
+        if (!mongoose.Types.ObjectId.isValid(transferId)) {
+            return res.status(400).json({ error: 'Invalid transfer ID.' });
         }
 
         // Only allow notes to be updated (prevent changing amounts/envelopes)
         const updates = {};
-        if(notes !== undefined){
+        if (notes !== undefined) {
             updates.notes = String(notes).trim();
         }
 
         // If no valid fields to update
-        if(Object.keys(updates).length === 0){
-            return res.status(400).json({error: 'No valid fields to update.'});
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ error: 'No valid fields to update.' });
         }
 
         // Find and update transfer
@@ -41,11 +39,11 @@ router.put('/:id', async(req,res) => {
                 runValidators: true
             }
         ).populate('from_envelope_id', 'name amount')
-        .populate('to_envelope_id', 'name amount');
+            .populate('to_envelope_id', 'name amount');
 
         // check if transfer exist
-        if(!transfer){
-            return res.status(404).json({error: 'Transfer not Found.'});
+        if (!transfer) {
+            return res.status(404).json({ error: 'Transfer not Found.' });
 
         }
 
@@ -55,9 +53,9 @@ router.put('/:id', async(req,res) => {
         });
 
     }
-    catch(err){
-        console.error('[update-transfer]',err);
-        return res.status(500).json({error: 'Server error while updating transfer.'});
+    catch (err) {
+        console.error('[update-transfer]', err);
+        return res.status(500).json({ error: 'Server error while updating transfer.' });
     }
 });
 

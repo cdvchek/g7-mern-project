@@ -5,6 +5,7 @@ const Transaction = require('./Transaction')
 const Split = require('./Split')
 const Transfer = require('./Transfer')
 const BankConnection = require('./BankConnection')
+const RefreshToken = require('./RefreshToken')
 
 module.exports = {
     User,
@@ -14,4 +15,5 @@ module.exports = {
     Split,
     Transaction,
     BankConnection,
+    RefreshToken,
 }
