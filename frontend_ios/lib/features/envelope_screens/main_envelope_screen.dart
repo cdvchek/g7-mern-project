@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend_ios/core/api/api_service.dart';
 import 'package:frontend_ios/core/models/envelope.dart';
 import 'package:frontend_ios/features/envelope_screens/create_envelope.dart';
+import 'package:frontend_ios/features/envelope_screens/edit_delete_envelope.dart';
 
 class MainEnvelopeScreen extends StatefulWidget {
   const MainEnvelopeScreen({super.key});
@@ -61,6 +62,32 @@ class _MainEnvelopeScreenState extends State<MainEnvelopeScreen> {
     }
   }
 
+  Future<void> _handleEdit(Envelope envelope) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => EditDeleteEnvelopeScreen(envelope: envelope),
+      ),
+    );
+
+    if (result is Map<String, dynamic>) {
+      final status = result['status'] as String?;
+      String? message;
+
+      if (status == 'deleted') {
+        message = 'Envelope deleted';
+      } else if (status == 'updated') {
+        message = 'Envelope updated';
+      }
+
+      await _loadEnvelopes();
+      if (message != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -105,7 +132,12 @@ class _MainEnvelopeScreenState extends State<MainEnvelopeScreen> {
             if (!_isLoading && _envelopes.isEmpty && _errorMessage == null)
               _EmptyState(onCreateTap: _handleCreateTap),
             if (!_isLoading && _envelopes.isNotEmpty)
-              ..._envelopes.map((envelope) => _EnvelopeCard(envelope: envelope)),
+              ..._envelopes.map(
+                (envelope) => _EnvelopeCard(
+                  envelope: envelope,
+                  onEdit: _handleEdit,
+                ),
+              ),
           ],
         ),
       ),
@@ -171,9 +203,10 @@ class _PrimaryActionButton extends StatelessWidget {
 }
 
 class _EnvelopeCard extends StatelessWidget {
-  const _EnvelopeCard({required this.envelope});
+  const _EnvelopeCard({required this.envelope, this.onEdit});
 
   final Envelope envelope;
+  final ValueChanged<Envelope>? onEdit;
 
   Color get _badgeColor {
     final raw = envelope.color;
@@ -238,7 +271,7 @@ class _EnvelopeCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () => onEdit?.call(envelope),
                 icon: const Icon(Icons.more_horiz, color: Color(0xFF1E1F3D)),
                 tooltip: 'Envelope actions',
               ),

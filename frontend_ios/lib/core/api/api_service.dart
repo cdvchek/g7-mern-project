@@ -244,6 +244,65 @@ class ApiService {
     }
   }
 
+  Future<Envelope> updateEnvelope({
+    required String id,
+    String? name,
+    int? amount,
+    String? colorHex,
+    int? order,
+  }) async {
+    final url = Uri.parse('$_baseUrl/api/envelopes/put/$id');
+
+    try {
+      final headers = await getAuthHeaders();
+      final Map<String, dynamic> payload = {};
+      if (name != null) payload['name'] = name;
+      if (amount != null) payload['amount'] = amount;
+      if (colorHex != null) payload['color'] = colorHex;
+      if (order != null) payload['order'] = order;
+
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode(payload),
+      );
+
+      final body = response.body.isNotEmpty
+          ? jsonDecode(response.body) as Map<String, dynamic>
+          : <String, dynamic>{};
+
+      if (response.statusCode == 200) {
+        return Envelope.fromJson(body);
+      }
+      if (response.statusCode == 401) {
+        throw Exception('Session expired. Please sign in again.');
+      }
+      throw Exception(body['error']?.toString() ?? 'Failed to update envelope');
+    } catch (e) {
+      throw Exception('Failed to update envelope: $e');
+    }
+  }
+
+  Future<void> deleteEnvelope(String id) async {
+    final url = Uri.parse('$_baseUrl/api/envelopes/delete/$id');
+
+    try {
+      final headers = await getAuthHeaders();
+      final response = await http.delete(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        return;
+      }
+      if (response.statusCode == 401) {
+        throw Exception('Session expired. Please sign in again.');
+      }
+      final body = _tryDecode(response.body);
+      throw Exception(body['error']?.toString() ?? 'Failed to delete envelope');
+    } catch (e) {
+      throw Exception('Failed to delete envelope: $e');
+    }
+  }
+
   Map<String, dynamic> _tryDecode(String raw) {
     if (raw.isEmpty) return <String, dynamic>{};
     try {
