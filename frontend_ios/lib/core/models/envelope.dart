@@ -7,6 +7,7 @@ class Envelope {
     this.monthlyTarget,
     this.color,
     this.createdAt,
+    this.description,
   });
 
   final String id;
@@ -16,6 +17,7 @@ class Envelope {
   final int? monthlyTarget;
   final String? color;
   final DateTime? createdAt;
+  final String? description;
 
   factory Envelope.fromJson(Map<String, dynamic> json) {
     return Envelope(
@@ -28,6 +30,7 @@ class Envelope {
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'] as String)
           : null,
+      description: json['description'] as String?,
     );
   }
 

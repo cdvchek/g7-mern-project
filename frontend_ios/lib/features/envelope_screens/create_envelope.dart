@@ -55,6 +55,7 @@ class _CreateEnvelopeScreenState extends State<CreateEnvelopeScreen> {
         name: _nameController.text.trim(),
         amount: parsedGoal,
         colorHex: _colorToHex(_selectedColor),
+        description: _descriptionController.text.trim(),
       );
 
       if (!mounted) return;

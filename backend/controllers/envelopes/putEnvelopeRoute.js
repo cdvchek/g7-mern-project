@@ -9,7 +9,7 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
 
         // Extract the envelope ID from the URL parameters
         const { id } = req.params;
-        const { name, color, amount, order } = req.body;
+        const { name, color, amount, order, description } = req.body;
 
         // Validate the id is a valid ObjectId if not return error 400
         if (!require('mongoose').Types.ObjectId.isValid(id)) {
@@ -34,6 +34,13 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
             }
             // Update color after validation
             updates.color = color.trim();
+        }
+
+        if (description !== undefined) {
+            if (typeof description !== 'string') {
+                return res.status(400).json({ error: 'Description must be a string' });
+            }
+            updates.description = description.trim();
         }
 
         // Parse the integers to assure that we are recieving numbers

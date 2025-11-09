@@ -212,6 +212,7 @@ class ApiService {
     required int amount,
     required String colorHex,
     int order = 0,
+    String description = '',
   }) async {
     final url = Uri.parse('$_baseUrl/api/envelopes/post');
 
@@ -225,6 +226,7 @@ class ApiService {
           'amount': amount,
           'color': colorHex,
           'order': order,
+          'description': description,
         }),
       );
 
@@ -249,6 +251,7 @@ class ApiService {
     String? name,
     int? amount,
     String? colorHex,
+    String? description,
     int? order,
   }) async {
     final url = Uri.parse('$_baseUrl/api/envelopes/put/$id');
@@ -259,6 +262,7 @@ class ApiService {
       if (name != null) payload['name'] = name;
       if (amount != null) payload['amount'] = amount;
       if (colorHex != null) payload['color'] = colorHex;
+      if (description != null) payload['description'] = description;
       if (order != null) payload['order'] = order;
 
       final response = await http.put(

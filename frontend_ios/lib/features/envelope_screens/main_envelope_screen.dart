@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend_ios/core/api/api_service.dart';
 import 'package:frontend_ios/core/models/envelope.dart';
 import 'package:frontend_ios/features/envelope_screens/create_envelope.dart';
+import 'package:frontend_ios/features/envelope_screens/detail_envelope_page.dart';
 import 'package:frontend_ios/features/envelope_screens/edit_delete_envelope.dart';
 
 class MainEnvelopeScreen extends StatefulWidget {
@@ -88,6 +89,34 @@ class _MainEnvelopeScreenState extends State<MainEnvelopeScreen> {
     }
   }
 
+  Future<void> _handleView(Envelope envelope) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DetailEnvelopePage(envelope: envelope),
+      ),
+    );
+
+    if (result is Map<String, dynamic>) {
+      final status = result['status'] as String?;
+      String? message;
+
+      if (status == 'deleted') {
+        message = 'Envelope deleted';
+      } else if (status == 'updated') {
+        message = 'Envelope updated';
+      }
+
+      if (status != null) {
+        await _loadEnvelopes();
+        if (message != null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -136,6 +165,7 @@ class _MainEnvelopeScreenState extends State<MainEnvelopeScreen> {
                 (envelope) => _EnvelopeCard(
                   envelope: envelope,
                   onEdit: _handleEdit,
+                  onTap: () => _handleView(envelope),
                 ),
               ),
           ],
@@ -203,10 +233,15 @@ class _PrimaryActionButton extends StatelessWidget {
 }
 
 class _EnvelopeCard extends StatelessWidget {
-  const _EnvelopeCard({required this.envelope, this.onEdit});
+  const _EnvelopeCard({
+    required this.envelope,
+    this.onEdit,
+    this.onTap,
+  });
 
   final Envelope envelope;
   final ValueChanged<Envelope>? onEdit;
+  final VoidCallback? onTap;
 
   Color get _badgeColor {
     final raw = envelope.color;
@@ -225,61 +260,68 @@ class _EnvelopeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE3E6F0)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x11000000),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      envelope.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E1F3D),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      envelope.amount > 0
-                          ? 'Goal: \$${envelope.amount}'
-                          : 'Goal not set',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF7C8097),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                onPressed: () => onEdit?.call(envelope),
-                icon: const Icon(Icons.more_horiz, color: Color(0xFF1E1F3D)),
-                tooltip: 'Envelope actions',
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFE3E6F0)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x11000000),
+                blurRadius: 18,
+                offset: Offset(0, 8),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          _EnvelopeSketch(accentColor: _badgeColor),
-        ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          envelope.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E1F3D),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          envelope.amount > 0
+                              ? 'Goal: \$${envelope.amount}'
+                              : 'Goal not set',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF7C8097),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => onEdit?.call(envelope),
+                    icon: const Icon(Icons.more_horiz, color: Color(0xFF1E1F3D)),
+                    tooltip: 'Envelope actions',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _EnvelopeSketch(accentColor: _badgeColor),
+            ],
+          ),
+        ),
       ),
     );
   }

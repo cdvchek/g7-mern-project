@@ -27,6 +27,12 @@ const envelopeSchema = new Schema(
             required: true,
         },
 
+        description: {
+            type: String,
+            default: '',
+            trim: true,
+        },
+
         monthly_target: {
             type: Schema.Types.Int32,
         },
@@ -48,6 +54,7 @@ envelopeSchema.methods.toSafeJSON = function () {
         amount: this.amount,
         monthly_target: this.monthly_target,
         color: this.color || '',
+        description: this.description || '',
         order: this.order,
     };
 };

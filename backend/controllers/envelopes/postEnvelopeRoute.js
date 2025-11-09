@@ -6,7 +6,7 @@ const { Envelope } = require('../../models');
 // Post create a new envelope
 router.post('/', requireAuth, async (req, res) => { // Added requireAuth for the specific route
     try {
-        const { name, color, amount, order } = req.body;
+        const { name, color, amount, order, description } = req.body;
 
         // Now we have to Validate string is not empty and nums are ints greater than or equal to 0
         if (!name || name.trim() === '') {
@@ -34,6 +34,7 @@ router.post('/', requireAuth, async (req, res) => { // Added requireAuth for the
             color: color || '',
             amount: parsedAmount,
             order: parsedOrder,
+            description: typeof description === 'string' ? description.trim() : '',
         }
 
         // Create the envelope in the database
