@@ -1,6 +1,15 @@
 import { hitEndpoint } from "./hitEndpoint.js";
 import { setTokens, clearTokens } from "./tokens.js";
 
+/*
+All these functions return a javascript object:
+{
+    code: 0 // 0 or 1, 0 means successful, 1 means error
+    data: {} // an object that contains the data from the endpoint
+    msg: "" // a string that says what which route succeeded or failed
+}
+*/
+
 export const loginAPI = async (body) => await hitEndpoint('POST', body, '/api/auth/login/', 'Login',
     (data) => {
         setTokens({
@@ -23,3 +32,6 @@ export const resetPasswordAPI = async (body) => await hitEndpoint('POST', body, 
 
 export const getEnvelopeIDAPI = async (id) => await hitEndpoint('GET', null, '/api/envelopes/get/' + id, 'Get envelope by ID');
 export const getMyEnvelopesAPI = async () => await hitEndpoint('GET', null, '/api/envelopes/get/', 'Get my envelopes');
+export const createEnvelopeAPI = async (body) => await hitEndpoint('POST', body, '/api/envelopes/post/', 'Create envelope');
+export const updateEnvelopeAPI = async (id, body) => await hitEndpoint('PUT', body, '/api/envelopes/put/' + id, 'Update envelope');
+export const deleteEnvelopeAPI = async (id) => await hitEndpoint('DELETE', null, '/api/envelopes/delete/' + id, 'Delete envelope');

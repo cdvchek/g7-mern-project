@@ -6,6 +6,7 @@ const { Envelope } = require('../../models');
 // Put updates to an envelope by ID
 router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for the specific route
     try {
+
         // Extract the envelope ID from the URL parameters
         const { id } = req.params;
         const { name, color, amount, order } = req.body;
@@ -36,25 +37,25 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
         }
 
         // Parse the integers to assure that we are recieving numbers
-        const parsedAmount = Number(amount);
-        const parsedOrder = Number(order);
 
         // Validates amount is an integer and >= 0 
-        if (parsedAmount !== undefined) {
+        if (amount !== undefined) {
+            const parsedAmount = Number(amount);
             if (!Number.isInteger(parsedAmount) || parsedAmount < 0) {
                 return res.status(400).json({ error: 'Amount is not receiving an integer and is less than 0' });
             }
             // Update amount after validation
-            updates.amount = amount;
+            updates.amount = parsedAmount;
         }
 
         // Validates order is an integer and >= 0
-        if (parsedOrder !== undefined) {
+        if (order !== undefined) {
+            const parsedOrder = Number(order);
             if (!Number.isInteger(parsedOrder) || parsedOrder < 0) {
                 return res.status(400).json({ error: 'Order is not receiving an integer and is less than 0' });
             }
             // Update order after validation
-            updates.order = order;
+            updates.order = parsedOrder;
         }
 
         // Update the envelope
