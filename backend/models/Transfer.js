@@ -1,16 +1,6 @@
-/*
-id: ObjectId,
-user_id: ObjectId,
-from_envelope_id: ObjectId,
-to_envelope_id: ObjectId,
-amount: int,
-occurred_at: ISODate,
-notes: string
-*/
-
 // models/Transfer.js
 
-const { Schema, model, SchemaType } = require('mongoose');
+const { Schema, model } = require('mongoose');
 const User = require('./User');
 const bcrypt = require('bcryptjs');
 const Envelope = require('./Envelope');
