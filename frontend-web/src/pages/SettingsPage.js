@@ -1,30 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./SettingsPage.module.css";
+import dashboardStyles from "../components/Dashboard.module.css";
 import FormInput from "../components/FormInput";
+import Settings from "../components/Settings";
 import { getUser } from "../api/tokens";
 
 export default function SettingsPage() {
     const router = useRouter();
-    const user = getUser();
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const userData = getUser();
+        setUser(userData);
+    }, []);
 
     const [username, setUsername] = useState("");
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [email, setEmail] = useState("");
+    const [timezone, setTimezone] = useState("");
+    const [currency, setCurrency] = useState("");
 
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
 
     const [message, setMessage] = useState("");
-    const [messageType, setMessageType] = useState("");
+    const [messageType, setMessageType] = useState(""); // "success" or "error"
+
+    // Extract user info with fallbacks
+    const userName = user?.name || "Guest User";
+    const userEmail = user?.email || "guest@example.com";
+    
+    const getInitials = (name) => {
+        if (!name) return "GU";
+        const parts = name.trim().split(" ");
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    };
+    
+    const userInitials = getInitials(userName);
 
     const handleConfirmChanges = async (e) => {
         e.preventDefault();
         
-        if (!username && !oldPassword && !newPassword && !email) {
+        // Basic validation
+        if (!username && !oldPassword && !newPassword && !email && !timezone && !currency) {
             setMessage("Please fill in at least one field to update.");
             setMessageType("error");
             return;
@@ -36,23 +59,52 @@ export default function SettingsPage() {
             return;
         }
 
-        // api integration to update user settings needed
+        // TODO: Add API calls to update user settings
+        // Example:
+        // const updates = {};
+        // if (username) updates.username = username;
+        // if (email) updates.email = email;
+        // if (timezone) updates.timezone = timezone;
+        // if (currency) updates.currency = currency;
+        // if (oldPassword && newPassword) {
+        //     updates.oldPassword = oldPassword;
+        //     updates.newPassword = newPassword;
+        // }
+        // const res = await updateUserAPI(updates);
 
         setMessage("Settings updated successfully!");
         setMessageType("success");
         
-        // clear after setting update
+        // Clear form after successful update
         setTimeout(() => {
             setUsername("");
             setOldPassword("");
             setNewPassword("");
             setEmail("");
+            setTimezone("");
+            setCurrency("");
             setMessage("");
         }, 2000);
     };
 
     return (
-        <div className={styles.settingsContainer}>
+        <div className={dashboardStyles.dashboardContainer}>
+            {/* Header with Logo, App Name and User Menu */}
+            <div className={dashboardStyles.header}>
+                <img 
+                    src="/budgiemail.png" 
+                    alt="BΰDGIE Mail Logo" 
+                    className={dashboardStyles.logo}
+                />
+                <div className={dashboardStyles.appName}>BΰDGIE</div>
+                <Settings 
+                    userName={userName}
+                    userEmail={userEmail}
+                    userInitials={userInitials}
+                />
+            </div>
+
+            <div className={styles.settingsContainer}>
             <div className={styles.settingsBox}>
                 <h2 className={styles.title}>Change Username</h2>
                 
@@ -165,11 +217,49 @@ export default function SettingsPage() {
                 <div className={styles.inputWrapper}>
                     <input
                         type="email"
-                        placeholder="Enter your new email. We will refer you to the email confirmation screen."
+                        placeholder="Enter your new email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className={styles.input}
                     />
+                </div>
+
+                <h2 className={styles.title}>Change Timezone</h2>
+                
+                <div className={styles.inputWrapper}>
+                    <select
+                        value={timezone}
+                        onChange={(e) => setTimezone(e.target.value)}
+                        className={styles.input}
+                    >
+                        <option value="">Select Timezone</option>
+                        <option value="US/Eastern">US/Eastern</option>
+                        <option value="US/Central">US/Central</option>
+                        <option value="US/Mountain">US/Mountain</option>
+                        <option value="US/Pacific">US/Pacific</option>
+                        <option value="Europe/London">Europe/London</option>
+                        <option value="Europe/Paris">Europe/Paris</option>
+                        <option value="Asia/Tokyo">Asia/Tokyo</option>
+                        <option value="Australia/Sydney">Australia/Sydney</option>
+                    </select>
+                </div>
+
+                <h2 className={styles.title}>Change Currency</h2>
+                
+                <div className={styles.inputWrapper}>
+                    <select
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        className={styles.input}
+                    >
+                        <option value="">Select Currency</option>
+                        <option value="USD">USD - US Dollar</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="GBP">GBP - British Pound</option>
+                        <option value="JPY">JPY - Japanese Yen</option>
+                        <option value="CAD">CAD - Canadian Dollar</option>
+                        <option value="AUD">AUD - Australian Dollar</option>
+                    </select>
                 </div>
 
                 {message && (
@@ -184,6 +274,7 @@ export default function SettingsPage() {
                 >
                     CONFIRM CHANGES
                 </button>
+            </div>
             </div>
         </div>
     );
