@@ -19,7 +19,6 @@ export default function Login() {
         e.preventDefault();
 
         if (email.trim() === "" || password === "") {
-            console.log("im sorta working");
             return
         }
 

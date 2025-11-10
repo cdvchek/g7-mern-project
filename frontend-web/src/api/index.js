@@ -44,3 +44,5 @@ export const getAccountsFromBankAPI = async (id) => await hitEndpoint('GET', nul
 export const refreshBankAccountsAPI = async (id) => await hitEndpoint('POST', null, `/api/banks/refresh/${id}`, 'Refresh accounts of bank');
 export const setAccountTrackingAPI = async (accountId, tracking) => await hitEndpoint('PUT', { tracking }, `/api/accounts/put/${accountId}`, 'Tracking account');
 export const deleteBankAPI = async (itemId) => await hitEndpoint('DELETE', null, '/api/banks/delete/' + itemId, 'Delete bank');
+
+export const getMyTransactions = async (body) => await hitEndpoint('GET', body, '/api/transactions/get/', 'Get my transcations');

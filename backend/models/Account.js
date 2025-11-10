@@ -24,6 +24,7 @@ const accountSchema = new Schema(
         },
 
         tracking: { type: Boolean, default: false },
+        tracked_on: { type: Date, default: null },
     },
     { timestamps: true }
 );
