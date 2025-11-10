@@ -1,5 +1,5 @@
 // models/BankConnection.js
-const { Schema, model, models } = require('mongoose');
+const { Schema, model } = require('mongoose');
 
 const EncryptedStringSchema = new Schema(
     {
@@ -30,6 +30,11 @@ const bankConnectionSchema = new Schema(
         institution_id: {
             type: String,
             default: ''
+        },
+
+        next_txn_cursor: {
+            type: String,
+            default: null
         },
     },
     { timestamps: true }

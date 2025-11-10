@@ -8,7 +8,7 @@ router.use(requireAuth);
 router.get('/', async (req, res) => {
     try {
         // Get query parameters
-        const { account_id, kind, allocated, posted_before, posted_after, merchant_name, category } = req.query;
+        const { account_id, allocated, posted_before, posted_after, merchant_name, category } = req.query;
 
         // Build filter object
         const filter = { user_id: req.userId };
@@ -17,8 +17,6 @@ router.get('/', async (req, res) => {
             if (!mongoose.Types.ObjectId.isValid(account_id)) return res.status(400).json({ error: 'Invalid account_id' });
             filter.account_id = account_id;
         }
-
-        if (kind) filter.kind = kind;
 
         if (typeof allocated !== 'undefined') {
             filter.allocated = allocated === 'true' || allocated === '1' || allocated === true;
@@ -74,7 +72,7 @@ router.get('/:id', async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching transaction:', error);
-        return res.status(500).json({ 
+        return res.status(500).json({
             error: 'Failed to fetch transaction',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });

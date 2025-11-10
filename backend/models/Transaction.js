@@ -6,19 +6,16 @@ const transactionSchema = new Schema(
         user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
         account_id: { type: Schema.Types.ObjectId, ref: 'Account', required: true, index: true },
 
-        kind: {
-            type: String,
-            enum: ['ACCOUNT_TRACK', 'ACCOUNT_UNTRACK', 'REAL'],
+        from_account_tracking: {
+            type: Boolean,
             required: true,
-            index: true,
         },
 
-        amount_cents: { type: Number, required: true },
+        amount_cents: { type: Schema.Types.Int32, required: true },
 
         allocated: {
-            type: Schema.Types.Boolean,
+            type: Boolean,
             default: false,
-            index: true,
         },
 
         posted_at: { type: Date, required: true, index: true },
@@ -43,7 +40,7 @@ transactionSchema.methods.toSafeJSON = function () {
         id: this._id,
         user_id: this.user_id,
         account_id: this.account_id,
-        kind: this.kind,
+        from_account_tracking: this.from_account_tracking,
         amount_cents: this.amount_cents,
         allocated: this.allocated,
         posted_at: this.posted_at,
