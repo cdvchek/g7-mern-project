@@ -1,6 +1,7 @@
 // In lib/features/auth/login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:frontend_ios/core/api/api_service.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -88,13 +89,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 final name = nameController.text;
                 final email = emailController.text;
                 final password = passwordController.text;
+                final localTimezone = await FlutterTimezone.getLocalTimezone();
 
                 // Call your API service!
                 String? registerStatus = await apiService.register(
                   email: email,
                   password: password,
                   name: name,
-                  timezone: "America/New_York", // You can get this from the device
+                  timezone: localTimezone.identifier, // You can get this from the device
                   currency: "USD"
                 );
                 if (registerStatus == "success" && mounted) {

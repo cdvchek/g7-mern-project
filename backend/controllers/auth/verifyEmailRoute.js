@@ -2,7 +2,7 @@ const router = require('express').Router();
 const { User } = require("../../models");
 const { hashToken } = require("../../util/crypto");
 
-const TOKEN_TTL_MIN = Number(process.env.TOKEN_TTL_MINUTES);
+const TOKEN_TTL_MIN = Number(process.env.EMAIL_TOKEN_TTL_MINUTES);
 
 router.post('/', async (req, res) => {
     try {
