@@ -237,7 +237,7 @@ class ApiService {
 
   Future<Envelope> createEnvelope({
     required String name,
-    required int amount,
+    required int monthlyTarget,
     required String colorHex,
     int order = 0,
     String description = '',
@@ -251,7 +251,7 @@ class ApiService {
         headers: headers,
         body: jsonEncode({
           'name': name,
-          'amount': amount,
+          'monthly_target': monthlyTarget,
           'color': colorHex,
           'order': order,
           'description': description,
@@ -277,7 +277,7 @@ class ApiService {
   Future<Envelope> updateEnvelope({
     required String id,
     String? name,
-    int? amount,
+    int? monthlyTarget,
     String? colorHex,
     String? description,
     int? order,
@@ -288,7 +288,7 @@ class ApiService {
       final headers = await getAuthHeaders();
       final Map<String, dynamic> payload = {};
       if (name != null) payload['name'] = name;
-      if (amount != null) payload['amount'] = amount;
+      if (monthlyTarget != null) payload['monthly_target'] = monthlyTarget;
       if (colorHex != null) payload['color'] = colorHex;
       if (description != null) payload['description'] = description;
       if (order != null) payload['order'] = order;

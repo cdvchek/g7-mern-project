@@ -205,6 +205,13 @@ class _DetailEnvelopePageState extends State<DetailEnvelopePage> {
                               color: Color(0xFF1E1F3D),
                             ),
                           ),
+                          Text(
+                            '${_envelope.monthlyTarget != null ? 'Goal: ' + _formatCurrency(_envelope.monthlyTarget!) : ''}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF7C8097),
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           Container(
                             height: 8,

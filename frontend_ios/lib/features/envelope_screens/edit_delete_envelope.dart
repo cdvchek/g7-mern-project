@@ -30,7 +30,7 @@ class _EditDeleteEnvelopeScreenState extends State<EditDeleteEnvelopeScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.envelope.name);
-    _goalController = TextEditingController(text: widget.envelope.amount.toString());
+    _goalController = TextEditingController(text: widget.envelope.monthlyTarget.toString());
     _descriptionController = TextEditingController(text: widget.envelope.description ?? '');
     _selectedColor = _hexToColor(widget.envelope.color) ?? _colorOptions.last;
   }
@@ -78,7 +78,7 @@ class _EditDeleteEnvelopeScreenState extends State<EditDeleteEnvelopeScreen> {
       final updatedEnvelope = await _apiService.updateEnvelope(
         id: widget.envelope.id,
         name: _nameController.text.trim(),
-        amount: parsedGoal,
+        monthlyTarget: parsedGoal,
         colorHex: _colorToHex(_selectedColor),
         description: _descriptionController.text.trim(),
       );

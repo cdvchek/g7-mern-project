@@ -53,7 +53,7 @@ class _CreateEnvelopeScreenState extends State<CreateEnvelopeScreen> {
     try {
       final envelope = await _apiService.createEnvelope(
         name: _nameController.text.trim(),
-        amount: parsedGoal,
+        monthlyTarget: parsedGoal,
         colorHex: _colorToHex(_selectedColor),
         description: _descriptionController.text.trim(),
       );

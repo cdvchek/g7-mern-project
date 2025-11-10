@@ -9,7 +9,7 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
 
         // Extract the envelope ID from the URL parameters
         const { id } = req.params;
-        const { name, color, amount, order, description } = req.body;
+        const { name, color, monthly_target, order, description } = req.body;
 
         // Validate the id is a valid ObjectId if not return error 400
         if (!require('mongoose').Types.ObjectId.isValid(id)) {
@@ -45,15 +45,17 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
 
         // Parse the integers to assure that we are recieving numbers
 
-        // Validates amount is an integer and >= 0 
-        if (amount !== undefined) {
-            const parsedAmount = Number(amount);
-            if (!Number.isInteger(parsedAmount) || parsedAmount < 0) {
-                return res.status(400).json({ error: 'Amount is not receiving an integer and is less than 0' });
+        // Validates monthly target is an integer and >= 0 
+        if (monthly_target !== undefined) {
+            const parsedMonthlyTarget = Number(monthly_target);
+            if (!Number.isInteger(parsedMonthlyTarget) || parsedMonthlyTarget < 0) {
+                return res.status(400).json({ error: 'Monthly target is not receiving an integer and is less than 0' });
             }
-            // Update amount after validation
-            updates.amount = parsedAmount;
+            // Update monthly target after validation
+            updates.monthly_target = parsedMonthlyTarget;
         }
+
+        // Amount in envelope cannot be directly updated; has to be done via transfers
 
         // Validates order is an integer and >= 0
         if (order !== undefined) {

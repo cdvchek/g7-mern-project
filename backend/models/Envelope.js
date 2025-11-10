@@ -25,6 +25,7 @@ const envelopeSchema = new Schema(
         amount: {
             type: Schema.Types.Int32,
             required: true,
+            default: 0,
         },
 
         description: {
@@ -35,6 +36,7 @@ const envelopeSchema = new Schema(
 
         monthly_target: {
             type: Schema.Types.Int32,
+            default: 0,
         },
 
         order: {

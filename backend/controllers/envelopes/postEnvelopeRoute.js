@@ -6,7 +6,7 @@ const { Envelope } = require('../../models');
 // Post create a new envelope
 router.post('/', requireAuth, async (req, res) => { // Added requireAuth for the specific route
     try {
-        const { name, color, amount, order, description } = req.body;
+        const { name, color, monthly_target, order, description } = req.body;
 
         // Now we have to Validate string is not empty and nums are ints greater than or equal to 0
         if (!name || name.trim() === '') {
@@ -14,12 +14,12 @@ router.post('/', requireAuth, async (req, res) => { // Added requireAuth for the
         }
 
         // Parse the integers to assure that we are recieving numbers
-        const parsedAmount = Number(amount);
-        const parsedOrder = Number(order);
+        const parsedMonthlyTarget = Number(monthly_target);
+        const parsedOrder = Number(order) || 0;
 
         // Valiadate value is int and greater than or equal to 0
-        if (!Number.isInteger(parsedAmount) || parsedAmount < 0) {
-            return res.status(400).json({ error: "Amount is not receiving an integer and is less than 0" });
+        if (!Number.isInteger(parsedMonthlyTarget) || parsedMonthlyTarget < 0) {
+            return res.status(400).json({ error: "Allocation Goal is not receiving an integer and is less than 0" });
         }
 
         // Validate value is int and greater than or equal to 0
@@ -32,7 +32,8 @@ router.post('/', requireAuth, async (req, res) => { // Added requireAuth for the
             user_id: req.userId,
             name,
             color: color || '',
-            amount: parsedAmount,
+            amount: 1000,       // VALUE FOR TESTING ONLY! CHANGE AFTER TESTING!
+            monthly_target: parsedMonthlyTarget,
             order: parsedOrder,
             description: typeof description === 'string' ? description.trim() : '',
         }

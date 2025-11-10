@@ -314,7 +314,7 @@ class _EnvelopeCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          envelope.name,
+                          '${envelope.name} - \$${envelope.amount}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -323,9 +323,10 @@ class _EnvelopeCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          envelope.amount > 0
-                              ? 'Goal: \$${envelope.amount}'
-                              : 'Goal not set',
+                          '${envelope.monthlyTarget != null && envelope.monthlyTarget! > 0 ? 'Target: \$${envelope.monthlyTarget} (${((envelope.amount / envelope.monthlyTarget!) * 100).toStringAsFixed(1)}% done\)' : 'Not set (0.0% done)'}',
+                          // envelope.monthlyTarget > 0
+                          //     ? 'Goal: \$${envelope.monthlyTarget}'
+                          //     : 'Goal not set',
                           style: const TextStyle(
                             fontSize: 13,
                             color: Color(0xFF7C8097),
