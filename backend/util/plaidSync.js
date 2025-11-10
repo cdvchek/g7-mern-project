@@ -1,18 +1,7 @@
-// util/plaidSync.js
 const { plaid } = require('../connection/plaid');
 const { BankConnection, Account } = require('../models');
 const { decrypt } = require('./crypto');
 
-/**
- * Fetch accounts from Plaid for a given item_id and upsert them in Mongo.
- * - Does NOT overwrite app flags (tracking/hidden).
- * - Updates cached balances and basic identity fields.
- * - Stamps BankConnection.status with lastGoodSyncAt / lastAttemptAt / lastError.
- *
- * @param {string} item_id - Plaid item_id for the bank connection
- * @returns {Promise<Array<Object>>} upserted Account docs (lean plain objects)
- * @throws if the BankConnection is missing or Plaid call fails
- */
 async function refreshAccountsForItem(item_id) {
     if (!item_id) throw new Error('missing_item_id');
 
@@ -20,33 +9,19 @@ async function refreshAccountsForItem(item_id) {
     const conn = await BankConnection.findOne({ item_id, removed: { $ne: true } });
     if (!conn) throw new Error('bank_connection_not_found');
 
-    // Mark attempt
-    await BankConnection.updateOne(
-        { _id: conn._id },
-        { $set: { 'status.lastAttemptAt': new Date() } }
-    );
-
     let access_token;
     try {
         access_token = decrypt(conn.accessToken);
     } catch (e) {
-        await BankConnection.updateOne(
-            { _id: conn._id },
-            { $set: { 'status.lastError': { message: `decrypt_failed: ${String(e)}`, at: new Date() } } }
-        );
         throw e;
     }
 
     // Call Plaid for accounts
     let accounts = [];
     try {
-        const r = await plaid.accountsGet({ access_token });
-        accounts = r?.data?.accounts || [];
+        const plaidRes = await plaid.accountsGet({ access_token });
+        accounts = plaidRes?.data?.accounts || [];
     } catch (e) {
-        await BankConnection.updateOne(
-            { _id: conn._id },
-            { $set: { 'status.lastError': formatPlaidError(e) } }
-        );
         throw e;
     }
 
@@ -71,14 +46,7 @@ async function refreshAccountsForItem(item_id) {
                     subtype: a.subtype || '',
 
                     // Cached balances (don’t touch app flags)
-                    balances: {
-                        available: a?.balances?.available ?? null,
-                        current: a?.balances?.current ?? null,
-                        limit: a?.balances?.limit ?? null,
-                        iso_currency_code: a?.balances?.iso_currency_code || 'USD',
-                        unofficial_currency_code: a?.balances?.unofficial_currency_code || '',
-                        lastUpdatedAt: new Date(),
-                    },
+                    balance_current: a?.balances?.current || null,
                 },
                 {
                     upsert: true,
@@ -87,12 +55,6 @@ async function refreshAccountsForItem(item_id) {
                 }
             ).lean()
         )
-    );
-
-    // Mark success
-    await BankConnection.updateOne(
-        { _id: conn._id },
-        { $set: { 'status.lastGoodSyncAt': new Date(), 'status.lastError': null } }
     );
 
     return upserts;

@@ -29,22 +29,15 @@ router.post('/create-link-token', requireAuth, async (req, res) => {
 router.post('/exchange-public-token', requireAuth, async (req, res) => {
     try {
         const { public_token, institution } = req.body || {};
+        console.log("Institution:", institution);
+
         if (!public_token) {
             return res.status(400).json({ error: 'missing_public_token' });
         }
 
         // Exchange for long-lived access token + item id
-        const r = await plaid.itemPublicTokenExchange({ public_token });
-        const { access_token, item_id } = r.data;
-
-        // Normalize institution payload for your model shape
-        const inst =
-            typeof institution === 'string'
-                ? { name: institution, institution_id: '' }
-                : {
-                    name: institution?.name || '',
-                    institution_id: institution?.institution_id || '',
-                };
+        const plaidRes = await plaid.itemPublicTokenExchange({ public_token });
+        const { access_token, item_id } = plaidRes.data;
 
         // Encrypt and upsert the connection
         const enc = encrypt(access_token);
@@ -54,9 +47,8 @@ router.post('/exchange-public-token', requireAuth, async (req, res) => {
                 userId: req.userId,
                 item_id,
                 accessToken: enc,
-                institution: inst,
-                removed: false,
-                'status.lastAttemptAt': new Date(),
+                institution_name: institution.name,
+                institution_id: institution.institution_id
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );

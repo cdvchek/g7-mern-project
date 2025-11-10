@@ -1,118 +1,164 @@
+"use client";
+
 import { useEffect, useState } from "react";
+import { usePlaidLink } from "react-plaid-link";
 import styles from "./Dashboard.module.css";
 import BanksList from "./BanksList";
 import BankDetail from "./BankDetail";
-// TODO: wire these to real endpoints
-// import {
-//   getMyBanksAPI,
-//   createBankAPI,
-//   getAccountsForBankAPI,
-//   setAccountTrackingAPI,
-// } from "../api";
 
-// fallback sample
-const sampleBanks = [
-  { id: "b1", name: "Chase", institution: "chase" },
-  { id: "b2", name: "Bank of America", institution: "bofa" },
-];
-const sampleAccounts = {
-  b1: [
-    { id: "a1", name: "Chase Checking", type: "Checking", balance: 4200, tracking: true },
-    { id: "a2", name: "Chase Savings", type: "Savings", balance: 9800, tracking: false },
-  ],
-  b2: [
-    { id: "a3", name: "BoA Checking", type: "Checking", balance: 1500, tracking: true },
-  ],
-};
+import {
+    getBanksAPI,
+    getAccountsFromBankAPI,
+    setAccountTrackingAPI,
+    deleteBankAPI,
+    createLinkTokenAPI,
+    exchangeLinkTokenAPI,
+} from "../api";
 
 export default function DashboardAccounts() {
-  const [banks, setBanks] = useState([]);
-  const [activeBankId, setActiveBankId] = useState(null);
-  const [accountsByBank, setAccountsByBank] = useState({}); // { bankId: Account[] }
-  const [loading, setLoading] = useState(false);
+    const [banks, setBanks] = useState([]);
+    const [activeBankId, setActiveBankId] = useState(null);
+    const [accountsByBank, setAccountsByBank] = useState({}); // { bankId: Account[] }
+    const [loading, setLoading] = useState(false);
 
-  async function fetchBanks() {
-    try {
-      setLoading(true);
-      const res = await getMyBanksAPI();
-      setBanks(res?.data ?? sampleBanks);
-    } catch {
-      setBanks(sampleBanks);
-    } finally {
-      setLoading(false);
+    // ---- Plaid Link state (single instance here) ----
+    const [linkToken, setLinkToken] = useState(null);
+    const [wantOpen, setWantOpen] = useState(false);
+    const [starting, setStarting] = useState(false);
+
+    const { open, ready } = usePlaidLink({
+        token: linkToken || "",
+        onSuccess: async (public_token, metadata) => {
+            console.log("Token:", public_token, "Metadata:", metadata);
+
+            try {
+                const institution = metadata.institution;
+                await exchangeLinkTokenAPI({ public_token, institution });
+                await fetchBanks(); // refresh list after successful exchange
+            } finally {
+                setLinkToken(null);
+                setWantOpen(false);
+            }
+        },
+        onExit: () => {
+            setLinkToken(null);
+            setWantOpen(false);
+        },
+    });
+
+    useEffect(() => {
+        if (wantOpen && linkToken && ready) {
+            open();
+            setStarting(false);
+        }
+    }, [wantOpen, linkToken, ready, open]);
+
+    async function startPlaid() {
+        try {
+            setStarting(true);
+            const res = await createLinkTokenAPI();
+            const token = res.data.link_token;
+            if (!token) throw new Error("No link token returned");
+            setLinkToken(token);
+            setWantOpen(true);
+        } catch (e) {
+            console.error("START PLAID ERROR:", e);
+            setStarting(false);
+        }
     }
-  }
 
-  async function fetchAccounts(bankId) {
-    // cache if present
-    if (accountsByBank[bankId]) return;
-    try {
-      const res = await getAccountsForBankAPI(bankId);
-      setAccountsByBank((m) => ({ ...m, [bankId]: res?.data ?? sampleAccounts[bankId] ?? [] }));
-    } catch {
-      setAccountsByBank((m) => ({ ...m, [bankId]: sampleAccounts[bankId] ?? [] }));
+    // ---- Data fetching ----
+    async function fetchBanks() {
+        setLoading(true);
+        try {
+            const res = await getBanksAPI();
+            setBanks(res.data);
+        } catch {
+            setBanks([]);
+        } finally {
+            setLoading(false);
+        }
     }
-  }
 
-  useEffect(() => { fetchBanks(); }, []);
-
-  async function handleOpenBank(bank) {
-    setActiveBankId(bank.id);
-    await fetchAccounts(bank.id);
-  }
-
-  async function handleAddBank(payload) {
-    // optimistic add
-    const temp = { id: `tmp-${Date.now()}`, name: payload.name, institution: payload.institution || "" };
-    setBanks((b) => [...b, temp]);
-    try {
-      await createBankAPI(payload);
-      await fetchBanks();
-    } catch {
-      // roll back on error
-      setBanks((b) => b.filter((x) => x.id !== temp.id));
+    async function fetchAccounts(bankId) {
+        if (accountsByBank[bankId]) return;
+        try {
+            const res = await getAccountsFromBankAPI(bankId);
+            setAccountsByBank((m) => ({ ...m, [bankId]: res?.data ?? [] }));
+        } catch {
+            setAccountsByBank((m) => ({ ...m, [bankId]: [] }));
+        }
     }
-  }
 
-  async function handleToggleTracking(bankId, accountId, next) {
-    // optimistic update
-    setAccountsByBank((m) => ({
-      ...m,
-      [bankId]: (m[bankId] || []).map((a) => a.id === accountId ? { ...a, tracking: next } : a),
-    }));
-    try {
-      await setAccountTrackingAPI(bankId, accountId, next);
-    } catch {
-      // rollback
-      setAccountsByBank((m) => ({
-        ...m,
-        [bankId]: (m[bankId] || []).map((a) => a.id === accountId ? { ...a, tracking: !next } : a),
-      }));
+    useEffect(() => {
+        fetchBanks();
+    }, []);
+
+    function getBankId(b) {
+        return b.item_id;
     }
-  }
 
-  const activeBank = activeBankId ? banks.find((b) => String(b.id) === String(activeBankId)) : null;
-  const activeAccounts = activeBankId ? (accountsByBank[activeBankId] || []) : [];
+    async function handleOpenBank(bank) {
+        const bankId = getBankId(bank);
+        if (!bankId) return;
+        setActiveBankId(bankId);
+        await fetchAccounts(bankId);
+    }
 
-  return (
-    <div className={styles.card}>
-      {activeBank ? (
-        <BankDetail
-          styles={styles}
-          bank={activeBank}
-          accounts={activeAccounts}
-          onBack={() => setActiveBankId(null)}
-          onToggle={(accId, next) => handleToggleTracking(activeBank.id, accId, next)}
-        />
-      ) : (
-        <BanksList
-          styles={styles}
-          banks={banks}
-          loading={loading}
-          onOpenBank={handleOpenBank}
-          onAddBank={handleAddBank}
-        />
-      )}
-    </div>
-  );
+    async function handleToggleTracking(bankId, accountId, next) {
+        setAccountsByBank((m) => ({
+            ...m,
+            [bankId]: (m[bankId] || []).map((a) =>
+                a.id === accountId ? { ...a, tracking: next } : a
+            ),
+        }));
+        try {
+            await setAccountTrackingAPI(accountId, next);
+        } catch {
+            setAccountsByBank((m) => ({
+                ...m,
+                [bankId]: (m[bankId] || []).map((a) =>
+                    a.id === accountId ? { ...a, tracking: !next } : a
+                ),
+            }));
+        }
+    }
+
+    async function handleDeleteBank(itemId) {
+        try {
+            await deleteBankAPI(itemId);
+            setActiveBankId(null);
+            setBanks(prev => prev.filter(item => item.item_id !== itemId));
+        } catch {
+
+        }
+    }
+
+    const activeBank =
+        activeBankId ? banks.find((b) => String(getBankId(b)) === String(activeBankId)) : null;
+    const activeAccounts = activeBankId ? accountsByBank[activeBankId] || [] : [];
+
+    return (
+        <div className={styles.card}>
+            {activeBank ? (
+                <BankDetail
+                    styles={styles}
+                    bank={activeBank}
+                    accounts={activeAccounts}
+                    onBack={() => setActiveBankId(null)}
+                    onToggle={(accId, next) => handleToggleTracking(activeBankId, accId, next)}
+                    onDelete={handleDeleteBank}
+                />
+            ) : (
+                <BanksList
+                    styles={styles}
+                    banks={banks}
+                    loading={loading}
+                    onOpenBank={handleOpenBank}
+                    onConnectBank={startPlaid}    // <- BanksList triggers this; Plaid lives here
+                    starting={starting}           // optional: show spinner on button
+                />
+            )}
+        </div>
+    );
 }

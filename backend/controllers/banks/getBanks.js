@@ -1,27 +1,24 @@
-// routes/banks.js
 const express = require('express');
 const router = express.Router();
 
-const requireAuth = require('../../middleware/requireAuth'); // attaches req.userId
+const requireAuth = require('../../middleware/requireAuth');
 const { BankConnection, Account } = require('../../models');
 
-// GET /api/banks
+// GET /api/banks/
 // List this user's bank connections
 router.get('/', requireAuth, async (req, res) => {
     const conns = await BankConnection.find({ userId: req.userId, removed: { $ne: true } })
         .sort({ createdAt: -1 })
         .lean();
 
-    return res.json({
-        data: conns.map(c => ({
-            id: String(c._id),
-            item_id: c.item_id,
-            institution: c.institution,
-            status: c.status,
-            createdAt: c.createdAt,
-            updatedAt: c.updatedAt,
-        })),
-    });
+    return res.json(conns.map(c => ({
+        id: String(c._id),
+        item_id: c.item_id,
+        institution_name: c.institution_name,
+        institution_id: c.institution_id,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+    })));
 });
 
 // GET /api/banks/:itemId/accounts
@@ -41,22 +38,19 @@ router.get('/:itemId/accounts', requireAuth, async (req, res) => {
         .sort({ name: 1 })
         .lean();
 
-    return res.json({
-        data: accounts.map(a => ({
-            id: String(a._id),
-            plaid_account_id: a.plaid_account_id,
-            name: a.name,
-            official_name: a.official_name,
-            mask: a.mask,
-            type: a.type,
-            subtype: a.subtype,
-            balances: a.balances,
-            tracking: !!a.tracking,
-            hidden: !!a.hidden,
-            createdAt: a.createdAt,
-            updatedAt: a.updatedAt,
-        })),
-    });
+    return res.json(accounts.map(a => ({
+        id: String(a._id),
+        plaid_account_id: a.plaid_account_id,
+        name: a.name,
+        official_name: a.official_name,
+        mask: a.mask,
+        type: a.type,
+        subtype: a.subtype,
+        balance_current: a.balance_current,
+        tracking: !!a.tracking,
+        createdAt: a.createdAt,
+        updatedAt: a.updatedAt,
+    })));
 });
 
 module.exports = router;

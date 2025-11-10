@@ -1,62 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePlaidLink } from "react-plaid-link";
-import { createLinkTokenAPI, exchangeLinkTokenAPI } from "../api";
-
-export default function BanksList({ styles, banks, loading, onOpenBank, onAddBank }) {
-    const [linkToken, setLinkToken] = useState(null);
-    const [wantOpen, setWantOpen] = useState(false);
-    const [starting, setStarting] = useState(false);
-
-    // Configure Plaid Link
-    const { open, ready, exit } = usePlaidLink({
-        token: linkToken || "",
-        onSuccess: async (public_token, metadata) => {
-            try {
-                const inst = metadata?.institution
-                    ? { name: metadata.institution.name || "Unknown Institution", institution_id: metadata.institution.institution_id || "" }
-                    : { name: "Unknown Institution", institution_id: "" };
-
-                await exchangeLinkTokenAPI({
-                    public_token,
-                    institution: inst, // << send full object
-                });
-
-                // Ask parent to re-fetch banks (or do it here if you control state)
-                onAddBank?.(inst);
-            } finally {
-                setLinkToken(null);
-                setWantOpen(false);
-            }
-        },
-        onExit: () => {
-            setLinkToken(null);
-            setWantOpen(false);
-        },
-    });
-
-    // Open Link when token is ready
-    useEffect(() => {
-        if (wantOpen && linkToken && ready) {
-            open();
-            setStarting(false);
-        }
-    }, [wantOpen, linkToken, ready, open]);
-
-    async function startPlaid() {
-        try {
-            setStarting(true);
-            const res = await createLinkTokenAPI();
-            const token = res?.data?.link_token;
-            if (!token) throw new Error("No link token returned");
-            setLinkToken(token);
-            setWantOpen(true);
-        } catch (e) {
-            console.error("START PLAID ERROR:", e);
-            setStarting(false);
-        }
-    }
+export default function BanksList({
+    styles,
+    banks = [],
+    loading = false,
+    onOpenBank,
+    onConnectBank,
+    starting = false,
+}) {
+    const safeBanks = Array.isArray(banks) ? banks : [];
+    const getBankId = (b) => b?.id ?? b?.item_id ?? b?._id ?? b?.institution_id ?? null;
 
     return (
         <>
@@ -65,8 +18,8 @@ export default function BanksList({ styles, banks, loading, onOpenBank, onAddBan
 
                 <button
                     className={`${styles.btn} ${styles.btnPrimary}`}
-                    onClick={startPlaid}
-                    disabled={starting} // optional guard
+                    onClick={onConnectBank}
+                    disabled={starting}
                     aria-busy={starting ? "true" : "false"}
                 >
                     {starting ? "Starting…" : "Connect Bank"}
@@ -76,13 +29,15 @@ export default function BanksList({ styles, banks, loading, onOpenBank, onAddBan
             {loading && <div style={{ marginTop: 12, color: "#666" }}>Loading…</div>}
 
             <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
-                {banks.map((b) => {
-                    const instName = b.institution?.name || b.name || "Bank";
-                    const instId = b.institution?.institution_id || b.institution_id || "";
+                {safeBanks.map((b, idx) => {
+                    const instName = b?.institution_name || b?.name || "Bank";
+                    const instId = b?.institution?.institution_id || b?.institution_id || "";
+                    const key = getBankId(b) ?? `bank-${idx}`;
+
                     return (
                         <div
-                            key={b.id || b.item_id}
-                            onClick={() => onOpenBank(b)}
+                            key={key}
+                            onClick={() => onOpenBank?.(b)}
                             style={{
                                 display: "flex",
                                 justifyContent: "space-between",
@@ -105,7 +60,7 @@ export default function BanksList({ styles, banks, loading, onOpenBank, onAddBan
                     );
                 })}
 
-                {!loading && banks.length === 0 && (
+                {!loading && safeBanks.length === 0 && (
                     <div style={{ color: "#666" }}>No banks connected yet. Connect one above.</div>
                 )}
             </div>

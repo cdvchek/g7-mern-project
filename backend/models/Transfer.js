@@ -16,39 +16,39 @@ const bcrypt = require('bcryptjs');
 const Envelope = require('./Envelope');
 
 const transferSchema = new Schema(
-  {
-    user_id: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-    },
+    {
+        user_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+        },
 
-    from_envelope_id: {
-        type: Schema.Types.ObjectId,
-        ref: 'Envelope',
-        required: true,
-    },
+        from_envelope_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Envelope',
+            required: false,
+        },
 
-    to_envelope_id: {
-        type: Schema.Types.ObjectId,
-        ref: 'Envelope',
-        required: true,
-    },
+        to_envelope_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Envelope',
+            required: false,
+        },
 
-    amount: {
-        type: Schema.Types.Int32,
-        required: true,
-    },
+        amount: {
+            type: Schema.Types.Int32,
+            required: true,
+        },
 
-    occured_at: {
-        type: Schema.Types.Date,
-        default: null,
-    },
+        occured_at: {
+            type: Schema.Types.Date,
+            default: null,
+        },
 
-    notes: {
-        type: String,
-        defualt: '',
-    },
+        notes: {
+            type: String,
+            defualt: '',
+        },
 
     },
     { timestamps: true } // Automatically adds createdAt and updatedAt

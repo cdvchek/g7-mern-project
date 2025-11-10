@@ -1,4 +1,3 @@
-// models/Account.js
 const { Schema, model, models } = require('mongoose');
 
 const accountSchema = new Schema(
@@ -6,31 +5,25 @@ const accountSchema = new Schema(
         user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
 
         // Tie back to Plaid
-        plaid_item_id: { type: String, required: true, index: true },       // Plaid item_id (string)
-        plaid_account_id: { type: String, required: true, unique: true },   // Plaid account_id (string, stable)
+        plaid_item_id: { type: String, required: true, index: true },
+        plaid_account_id: { type: String, required: true, unique: true },
 
         // Display / identity
-        name: { type: String, trim: true, default: '', required: true },    // e.g., "Checking"
-        official_name: { type: String, trim: true, default: '' },           // bank's official label
-        mask: { type: String, trim: true, default: '' },                    // last 2–4 digits
+        name: { type: String, trim: true, default: '', required: true },
+        official_name: { type: String, trim: true, default: '' },
+        mask: { type: String, trim: true, default: '' },
 
-        // Classification (keep flexible; Plaid can add values)
-        type: { type: String, trim: true, default: '' },     // 'depository' | 'credit' | 'loan' | 'investment' | 'brokerage' | ...
-        subtype: { type: String, trim: true, default: '' },  // 'checking' | 'savings' | 'credit card' | ...
+        // Classification
+        type: { type: String, trim: true, default: '' },
+        subtype: { type: String, trim: true, default: '' },
 
-        // Balances (cached for snappy UI; refresh via Plaid when needed)
-        balances: {
-            available: { type: Number, default: null },
-            current: { type: Number, default: null },
-            limit: { type: Number, default: null },            // for credit cards
-            iso_currency_code: { type: String, default: 'USD' },
-            unofficial_currency_code: { type: String, default: '' },
-            lastUpdatedAt: { type: Date },                     // when you last refreshed balances from Plaid
+        // Balances
+        balance_current: {
+            type: Number,
+            default: null,
         },
 
-        // App-level flags & metadata
-        tracking: { type: Boolean, default: false },         // user toggle in UI
-        hidden: { type: Boolean, default: false },           // optional "hide from UI"
+        tracking: { type: Boolean, default: false },
     },
     { timestamps: true }
 );
@@ -40,27 +33,21 @@ accountSchema.index({ user_id: 1, plaid_item_id: 1 });
 accountSchema.index({ user_id: 1, tracking: 1 });
 
 accountSchema.methods.toSafeJSON = function () {
-    const {
-        _id, user_id, plaid_item_id, plaid_account_id, name, official_name, mask,
-        type, subtype, balances, tracking, hidden, createdAt, updatedAt
-    } = this;
-
     return {
-        id: _id,
-        user_id,
-        plaid_item_id,
-        plaid_account_id,
-        name,
-        official_name,
-        mask,
-        type,
-        subtype,
-        balances,
-        tracking,
-        hidden,
-        createdAt,
-        updatedAt,
+        id: this._id,
+        user_id: this.user_id,
+        plaid_item_id: this.plaid_item_id,
+        plaid_account_id: this.plaid_account_id,
+        name: this.name,
+        official_name: this.official_name,
+        mask: this.mask,
+        type: this.type,
+        subtype: this.subtype,
+        balance_current: this.balance_current,
+        tracking: this.tracking,
+        createdAt: this.createdAt,
+        updatedAt: this.updatedAt
     };
 };
 
-module.exports = models.Account || model('Account', accountSchema);
+module.exports = model('Account', accountSchema);

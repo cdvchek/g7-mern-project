@@ -6,7 +6,7 @@ const requireAuth = require('../../middleware/requireAuth');
 const { BankConnection } = require('../../models');
 const { refreshAccountsForItem } = require('../../util/plaidSync');
 
-// POST /api/banks/:itemId/refresh-accounts
+// POST /api/banks/refresh/:itemId
 // Pull latest accounts from Plaid and upsert
 router.post('/:itemId', requireAuth, async (req, res) => {
     const { itemId } = req.params;
@@ -31,10 +31,6 @@ router.post('/:itemId', requireAuth, async (req, res) => {
             })),
         });
     } catch (e) {
-        await BankConnection.updateOne(
-            { item_id: itemId },
-            { $set: { 'status.lastError': { message: String(e), at: new Date() }, 'status.lastAttemptAt': new Date() } }
-        );
         return res.status(500).json({ error: 'refresh_failed' });
     }
 });

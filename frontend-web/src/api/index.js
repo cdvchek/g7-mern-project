@@ -41,5 +41,6 @@ export const deleteEnvelopeAPI = async (id) => await hitEndpoint('DELETE', null,
 
 export const getBanksAPI = async () => await hitEndpoint('GET', null, '/api/banks/get/', 'Get my banks');
 export const getAccountsFromBankAPI = async (id) => await hitEndpoint('GET', null, `/api/banks/get/${id}/accounts`, 'Get accounts from bank');
-export const refreshBankAccountsAPI = async () => await hitEndpoint('POST', null, `/api/banks/refresh/${id}`, 'Refresh accounts of bank');
+export const refreshBankAccountsAPI = async (id) => await hitEndpoint('POST', null, `/api/banks/refresh/${id}`, 'Refresh accounts of bank');
 export const setAccountTrackingAPI = async (accountId, tracking) => await hitEndpoint('PUT', { tracking }, `/api/accounts/put/${accountId}`, 'Tracking account');
+export const deleteBankAPI = async (itemId) => await hitEndpoint('DELETE', null, '/api/banks/delete/' + itemId, 'Delete bank');

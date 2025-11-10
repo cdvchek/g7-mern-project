@@ -1,4 +1,4 @@
-export default function BankDetail({ styles, bank, accounts, onBack, onToggle }) {
+export default function BankDetail({ styles, bank, accounts, onBack, onToggle, onDelete }) {
     return (
         <div>
             {/* Header with back arrow */}
@@ -18,7 +18,8 @@ export default function BankDetail({ styles, bank, accounts, onBack, onToggle })
                 >
                     ←
                 </button>
-                <h3 style={{ margin: 0 }}>{bank.name}</h3>
+                <h3 style={{ margin: 0 }}>{bank.institution_name}</h3>
+                <button onClick={() => onDelete(bank.item_id)}>Delete</button>
             </div>
 
             <div style={{ display: "grid", gap: 12 }}>
@@ -37,7 +38,10 @@ export default function BankDetail({ styles, bank, accounts, onBack, onToggle })
                         <div>
                             <div style={{ fontWeight: 700 }}>{a.name}</div>
                             <div style={{ fontSize: 12, color: "#666" }}>{a.type}</div>
-                            <div style={{ fontSize: 14, marginTop: 6 }}>${Number(a.balance || 0).toLocaleString()}</div>
+                            <div style={{ fontSize: 14, marginTop: 6 }}>
+                                ${Number(a.balance_current ?? 0).toLocaleString()}
+                            </div>
+
                         </div>
                         <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13 }}>
                             <input
