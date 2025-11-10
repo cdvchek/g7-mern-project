@@ -92,7 +92,7 @@ class _NavBkgrdScreenState extends State<NavBkgrdScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Our Budget App'),
+        title: const Text('BΰDGIE'),
         actions: [
           // Profile icon with dropdown menu
           PopupMenuButton<String>(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend_ios/core/api/api_service.dart';
 import 'package:frontend_ios/core/models/envelope.dart';
 import 'package:frontend_ios/features/envelope_screens/detail_envelope_page.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -16,10 +17,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? _errorMessage;
   List<Envelope> _envelopes = [];
 
+  int _totalBalance = 10000; // Placeholder total balance
+  int _touchedIndex = -1; // For pie chart interaction 
+
   @override
   void initState() {
     super.initState();
-    _loadEnvelopes();
+    _loadDashboardData();
+  }
+
+  Future<void> _loadDashboardData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final envelopes = await _apiService.fetchEnvelopes();
+      // Uncomment when total balance API is ready
+      // final balance = await _apiService.fetchTotalBalance();
+
+      if (mounted) {
+        setState(() {
+          _envelopes = envelopes;
+          // _totalBalance = totalBalance; // Use fetched balance
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString().replaceFirst('Exception: ', '');
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadEnvelopes() async {
@@ -30,6 +62,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     try {
       final envelopes = await _apiService.fetchEnvelopes();
+
       if (mounted) {
         setState(() {
           _envelopes = envelopes;
@@ -69,6 +102,87 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  String _formatCurrency(int amount) {
+    return '\$${amount.toStringAsFixed(2)}';
+  }
+
+  // This function builds your list of pie chart slices
+  List<PieChartSectionData> _buildPieSlices() {
+    final List<PieChartSectionData> slices = [];
+    
+    // Calculate total allocated (now in dollars)
+    int totalAllocated = 0;
+    for (var envelope in _envelopes) {
+      totalAllocated += envelope.amount;
+    }
+    
+    // Calculate leftover amount (now in dollars)
+    final int leftoverAmount = _totalBalance - totalAllocated;
+
+    // Create a slice for each envelope
+    for (int i = 0; i < _envelopes.length; i++) {
+      final envelope = _envelopes[i];
+      final isTouched = (i == _touchedIndex);
+      final double radius = isTouched ? 60.0 : 50.0;
+      // Calculation is the same, but uses the dollar values
+      final double percentage = (envelope.amount / _totalBalance) * 100;
+
+      slices.add(
+        PieChartSectionData(
+          color: envelope.resolvedColor,
+          value: envelope.amount.toDouble(), // Value is in dollars
+          title: '${percentage.toStringAsFixed(1)}%',
+          radius: radius,
+          titleStyle: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      );
+    }
+
+    // Add the "Leftover" slice
+    if (leftoverAmount > 0) {
+      final isTouched = (_envelopes.length == _touchedIndex);
+      final double radius = isTouched ? 60.0 : 50.0;
+      final double percentage = (leftoverAmount / _totalBalance) * 100;
+
+      slices.add(
+        PieChartSectionData(
+          color: Colors.grey[300],
+          value: leftoverAmount.toDouble(), // Value is in dollars
+          title: '${percentage.toStringAsFixed(1)}%',
+          radius: radius,
+          titleStyle: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey[700],
+          ),
+        ),
+      );
+    }
+    return slices;
+  }
+
+  // Shows the details in the center
+  String _getTouchedSliceDetails() {
+    if (_touchedIndex < 0) {
+      // Show total when nothing is touched
+      return _formatCurrency(_totalBalance);
+    }
+    
+    if (_touchedIndex < _envelopes.length) {
+      // Show envelope details
+      final envelope = _envelopes[_touchedIndex];
+      return '${envelope.name}: \n${_formatCurrency(envelope.amount)}';
+    } else {
+      // Show "Leftover" details
+      final int leftoverAmount = _totalBalance - _envelopes.fold(0, (sum, e) => sum + e.amount);
+      return 'Unallocated: \n${_formatCurrency(leftoverAmount)}';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
@@ -76,7 +190,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
-          // 1. Total Balance Placeholder
+          // Total Balance Placeholder
           Text(
             'Total Balance:',
             style: Theme.of(context).textTheme.titleMedium,
@@ -87,26 +201,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   fontWeight: FontWeight.bold,
                 ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 48),
 
-          // 2. Pie Chart Placeholder
-          Center(
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  'Pie Chart Placeholder',
-                  style: TextStyle(color: Colors.grey[600]),
+          // Pie Chart
+          SizedBox(
+            height: 200,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                PieChart(
+                  PieChartData(
+                    pieTouchData: PieTouchData(
+                      touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                        setState(() {
+                          if (!event.isInterestedForInteractions ||
+                              pieTouchResponse == null ||
+                              pieTouchResponse.touchedSection == null) {
+                            _touchedIndex = -1;
+                            return;
+                          }
+                          _touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                        });
+                      },
+                    ),
+                    borderData: FlBorderData(show: false),
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 80,
+                    sections: _buildPieSlices(), // Calls your reworked function
+                  ),
                 ),
-              ),
+                Text(
+                  _getTouchedSliceDetails(), // Calls your reworked function
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 32),
+
+          const SizedBox(height: 54),
 
           // 3. Envelopes Section
           Text(

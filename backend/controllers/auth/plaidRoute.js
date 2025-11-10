@@ -31,7 +31,7 @@ router.post('/exchange-public-token', requireAuth, async (req, res) => {
         const enc = encrypt(access_token);
         await BankConnection.findOneAndUpdate(
             { item_id },
-            { userId: req.session.userId, item_id, accessToken: enc, institution },
+            { userId: req.userId, item_id, accessToken: enc, institution },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
         res.json({ ok: true, item_id });
