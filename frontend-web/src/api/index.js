@@ -38,3 +38,8 @@ export const getMyEnvelopesAPI = async () => await hitEndpoint('GET', null, '/ap
 export const createEnvelopeAPI = async (body) => await hitEndpoint('POST', body, '/api/envelopes/post/', 'Create envelope');
 export const updateEnvelopeAPI = async (id, body) => await hitEndpoint('PUT', body, '/api/envelopes/put/' + id, 'Update envelope');
 export const deleteEnvelopeAPI = async (id) => await hitEndpoint('DELETE', null, '/api/envelopes/delete/' + id, 'Delete envelope');
+
+export const getBanksAPI = async () => await hitEndpoint('GET', null, '/api/banks/get/', 'Get my banks');
+export const getAccountsFromBankAPI = async (id) => await hitEndpoint('GET', null, `/api/banks/get/${id}/accounts`, 'Get accounts from bank');
+export const refreshBankAccountsAPI = async () => await hitEndpoint('POST', null, `/api/banks/refresh/${id}`, 'Refresh accounts of bank');
+export const setAccountTrackingAPI = async (accountId, tracking) => await hitEndpoint('PUT', { tracking }, `/api/accounts/put/${accountId}`, 'Tracking account');
