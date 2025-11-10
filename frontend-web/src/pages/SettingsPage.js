@@ -28,9 +28,9 @@ export default function SettingsPage() {
     const [showNewPassword, setShowNewPassword] = useState(false);
 
     const [message, setMessage] = useState("");
-    const [messageType, setMessageType] = useState(""); // "success" or "error"
+    const [messageType, setMessageType] = useState("");
 
-    // Extract user info with fallbacks
+    // user info
     const userName = user?.name || "Guest User";
     const userEmail = user?.email || "guest@example.com";
     
@@ -46,7 +46,7 @@ export default function SettingsPage() {
     const handleConfirmChanges = async (e) => {
         e.preventDefault();
         
-        // Basic validation
+        // verify inputs
         if (!username && !oldPassword && !newPassword && !email && !timezone && !currency) {
             setMessage("Please fill in at least one field to update.");
             setMessageType("error");
@@ -59,23 +59,12 @@ export default function SettingsPage() {
             return;
         }
 
-        // TODO: Add API calls to update user settings
-        // Example:
-        // const updates = {};
-        // if (username) updates.username = username;
-        // if (email) updates.email = email;
-        // if (timezone) updates.timezone = timezone;
-        // if (currency) updates.currency = currency;
-        // if (oldPassword && newPassword) {
-        //     updates.oldPassword = oldPassword;
-        //     updates.newPassword = newPassword;
-        // }
-        // const res = await updateUserAPI(updates);
+        // add api calls here to update user settings
 
         setMessage("Settings updated successfully!");
         setMessageType("success");
         
-        // Clear form after successful update
+        // clear fields after a delay
         setTimeout(() => {
             setUsername("");
             setOldPassword("");
@@ -89,7 +78,7 @@ export default function SettingsPage() {
 
     return (
         <div className={dashboardStyles.dashboardContainer}>
-            {/* Header with Logo, App Name and User Menu */}
+            {/* Header  */}
             <div className={dashboardStyles.header}>
                 <img 
                     src="/budgiemail.png" 

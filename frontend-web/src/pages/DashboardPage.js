@@ -19,11 +19,11 @@ export default function Dashboard() {
         setUser(userData);
     }, []);
 
-    // Extract user info with fallbacks
+    // user info
     const userName = user?.name || "Guest User";
     const userEmail = user?.email || "guest@example.com";
     
-    // Extract initials from name
+    // initials
     const getInitials = (name) => {
         if (!name) return "GU";
         const parts = name.trim().split(" ");
@@ -48,7 +48,7 @@ export default function Dashboard() {
 
     return (
         <div className={styles.dashboardContainer}>
-            {/* Header with Logo, App Name and User Menu */}
+            {/* Header */}
             <div className={styles.header}>
                 <img 
                     src="/budgiemail.png" 
