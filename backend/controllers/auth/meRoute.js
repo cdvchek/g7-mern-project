@@ -4,10 +4,11 @@ const { User } = require('../../models');
 const { sendMail } = require('../../util/resend');
 const { createToken, hashToken } = require('../../util/crypto');
 const TOKEN_TTL_MIN = Number(process.env.TOKEN_TTL_MINUTES);
+const requireAuth = require('../../middleware/requireAuth');
 
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
     try {
-        const myID = req.session.userId;
+        const myID = req.userId;
         const myUser = await User.findOne({ _id: myID });
 
         if (!myUser) return res.status(404).json({ error: 'Login again.' });
@@ -18,9 +19,9 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.put('/', async (req, res) => {
+router.put('/', requireAuth, async (req, res) => {
     try {
-        const id = req.session.userId;
+        const id = req.userId;
         const { name, email, timezone, currency, password } = req.body;
 
         if (!password) {
@@ -86,26 +87,9 @@ router.put('/', async (req, res) => {
                 const raw = createToken();
                 updates.emailVerifyTokenHash = hashToken(raw);
                 updates.emailVerifyTokenExp = new Date(Date.now() + TOKEN_TTL_MIN * 60 * 1000);
-                await user.save();
+                // await user.save();
                 
                 newEmail = normEmail; // Set flag to send email
-
-                // Send a new email verification if email was changed
-                if (newEmail) {
-                    const verifyUrl = `${process.env.APP_URL}/verify_email?token=${raw}&email=${encodeURIComponent(newEmail)}`;
-
-                    await sendMail({
-                        to: newEmail,
-                        subject: 'Verify your new email',
-                        text: `Verify your email: ${verifyUrl}`,
-                        html: `
-                            <p>Welcome${name ? ', ' + name : ''}!</p>
-                            <p>Confirm your email address to finish setting up your account.</p>
-                            <p><a href="${verifyUrl}">Verify Email</a></p>
-                            <p>This link expires in ${TOKEN_TTL_MIN} minutes.</p>
-                        `,
-                    });
-                }
             }
         }
 
@@ -121,6 +105,23 @@ router.put('/', async (req, res) => {
 
         if (!updateMe) {
             return res.status(404).json({ error: "Couldn't find own user to update. Login again." });
+        }
+
+        // Send a new email verification if email was changed
+        if (newEmail && raw) {
+            const verifyUrl = `${process.env.APP_URL}/verify_email?token=${raw}&email=${encodeURIComponent(newEmail)}`;
+
+            await sendMail({
+                to: newEmail,
+                subject: 'Verify your new email',
+                text: `Verify your email: ${verifyUrl}`,
+                html: `
+                    <p>Welcome${name ? ', ' + name : ''}!</p>
+                    <p>Confirm your email address to finish setting up your account.</p>
+                    <p><a href="${verifyUrl}">Verify Email</a></p>
+                    <p>This link expires in ${TOKEN_TTL_MIN} minutes.</p>
+                `,
+            });
         }
 
         return res.json(updateMe.toSafeJSON());

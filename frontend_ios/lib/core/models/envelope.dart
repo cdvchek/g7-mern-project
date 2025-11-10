@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Envelope {
   Envelope({
     required this.id,
@@ -40,5 +42,20 @@ class Envelope {
     if (value is double) return value.toInt();
     if (value is String) return int.tryParse(value);
     return null;
+  }
+
+  Color get resolvedColor {
+    final hex = color;
+    if (hex == null || hex.isEmpty) {
+      return const Color(0xFF1E1F3D); // Default color
+    }
+    final normalized = hex.replaceFirst('#', '');
+    if (normalized.length == 6) {
+      final value = int.tryParse(normalized, radix: 16);
+      if (value != null) {
+        return Color(0xFF000000 | value);
+      }
+    }
+    return const Color(0xFF1E1F3D);
   }
 }
