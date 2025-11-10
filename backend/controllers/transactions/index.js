@@ -1,6 +1,8 @@
 const router = require('express').Router();
 
-router.get("/", require("./getTransactionsRoute"));
+router.post("/", require("./postTransactionsRoute")); // Create new transaction
+router.use("/", require("./getTransactionsRoute")); // Handles both GET / and GET /:id
+router.put("/:id", require("./putTransactionsRoute")); // Update transaction
+router.delete("/:id", require("./deleteTransactionsRoute")); // Delete transaction
 
-// This routers to the index.js file in the controller folder
 module.exports = router;
