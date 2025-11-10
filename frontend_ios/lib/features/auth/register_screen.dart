@@ -30,7 +30,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Our Budgeting App"),
+        title: Text("BΰDGIE"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),

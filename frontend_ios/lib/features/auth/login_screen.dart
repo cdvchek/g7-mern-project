@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend_ios/features/nav_background_screen.dart';
 import 'package:frontend_ios/core/api/api_service.dart';
 import 'package:frontend_ios/features/auth/register_screen.dart';
+import 'package:frontend_ios/features/auth/forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Our Budgeting App"),
+        title: Text("BΰDGIE"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -59,7 +60,10 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(height: 20),
             TextButton(
               onPressed: () { 
-                // TODO: Navigate to Forgot Password Screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                );
               },
               child: Text("Forgot Password?"),
             ),
@@ -88,13 +92,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     context,
                     MaterialPageRoute(builder: (context) => const NavBkgrdScreen()),
                   );
-                  print("Logined in with $email");
+                  // print("Logined in with $email");
                 } else {
                   setState(() {
                     errorMessage = loginStatus; // Show error message
                   });
-                  print("Login failed for $email");
-                  print("Error: $loginStatus");
+                  // print("Login failed for $email");
+                  // print("Error: $loginStatus");
                 }
               },
               child: Text('Login'),

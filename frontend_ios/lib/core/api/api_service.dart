@@ -103,6 +103,33 @@ class ApiService {
     }
   }
 
+  Future<String> requestPasswordReset(String email) async {
+    final Uri requestResetUri = Uri.parse("$_baseUrl/api/auth/forgot-password");
+
+    try {
+      final response = await http.post(
+        requestResetUri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+        }),
+      );
+
+      final body = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && body['ok'] == true) {
+        // Return the success message from the server
+        return body['message'] ?? "Password reset link sent.";
+      } else {
+        // If the server sends an error, throw it
+        throw (body['message'] ?? "Failed to request reset.");
+      }
+    } catch (e) {
+      // Re-throw the error to be caught by the ForgotPasswordScreen
+      throw Exception(e.toString());
+    }
+  }
+
   Future<void> logout() async {
     final url = Uri.parse('$_baseUrl/api/auth/logout');
 

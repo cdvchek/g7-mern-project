@@ -92,7 +92,17 @@ class _NavBkgrdScreenState extends State<NavBkgrdScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BΰDGIE'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('BΰDGIE'),
+            const SizedBox(width: 8),
+            Image.asset(
+              'assets/images/budgielogo.png',
+              height: 30,
+            ),
+          ]
+        ),
         actions: [
           // Profile icon with dropdown menu
           PopupMenuButton<String>(
@@ -115,12 +125,12 @@ class _NavBkgrdScreenState extends State<NavBkgrdScreen> {
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               const PopupMenuItem<String>(
-                value: 'logout',
-                child: Text('Logout'),
-              ),
-              const PopupMenuItem<String>(
                 value: 'settings',
                 child: Text('Settings'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'logout',
+                child: Text('Logout'),
               ),
             ],
           ),
