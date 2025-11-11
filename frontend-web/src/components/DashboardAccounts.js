@@ -113,7 +113,7 @@ export default function DashboardAccounts() {
             ),
         }));
         try {
-            await setAccountTrackingAPI(accountId, next);
+            await setAccountTrackingAPI(accountId, { item_id: bankId, tracking: next });
         } catch {
             setAccountsByBank((m) => ({
                 ...m,
