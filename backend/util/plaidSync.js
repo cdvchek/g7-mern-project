@@ -261,8 +261,60 @@ function formatPlaidError(e) {
     return { message: String(e), at: now };
 }
 
+async function syncAllForUser(userId, {
+    daysRequested = 90,
+    includePending = true,
+    refreshOnly = false,     // when true: refresh accounts but skip txn sync
+    concurrency = 3,
+} = {}) {
+    const items = await BankConnection
+        .find({ userId, removed: { $ne: true } }, { item_id: 1 })
+        .lean();
+
+    const limit = pLimit(concurrency);
+    const results = {};
+
+    await Promise.all(items.map(i => limit(async () => {
+        const itemId = i.item_id;
+        results[itemId] = { item_id: itemId };
+
+        try {
+            const accounts = await refreshAccountsForItem(itemId);
+            results[itemId].accounts = accounts;
+            // Optionally stamp lastAccountsRefreshAt:
+            // await BankConnection.updateOne({ item_id: itemId }, { $set: { 'status.lastAccountsRefreshAt': new Date() } });
+        } catch (e) {
+            const err = formatPlaidError(e);
+            results[itemId].error_refresh = err;
+            // Optionally persist:
+            // await BankConnection.updateOne({ item_id: itemId }, { $set: { 'status.lastError': err } });
+            // If refresh fails, you can still try txn sync (or bail). Here we bail:
+            if (refreshOnly) return;
+            // else continue to txn sync attempt if you prefer; many teams bail.
+            return;
+        }
+
+        if (refreshOnly) return;
+
+        try {
+            const syncRes = await syncTransactionsForItem(itemId, { daysRequested, includePending });
+            results[itemId].transactions = syncRes;
+            // Optionally stamp lastTxnSyncAt:
+            // await BankConnection.updateOne({ item_id: itemId }, { $set: { 'status.lastTxnSyncAt': new Date() } });
+        } catch (e) {
+            const err = formatPlaidError(e);
+            results[itemId].error_sync = err;
+            // Optionally persist:
+            // await BankConnection.updateOne({ item_id: itemId }, { $set: { 'status.lastError': err } });
+        }
+    })));
+
+    return results;
+}
+
 module.exports = {
     refreshAccountsForItem,
     refreshAllItemsForUser,
-    syncTransactionsForItem
+    syncTransactionsForItem,
+    syncAllForUser
 };
