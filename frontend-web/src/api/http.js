@@ -9,6 +9,8 @@ import {
     clearTokens,
 } from './tokens';
 
+const mode = process.env.ENVIRONMENT;
+
 initTokenStore();
 
 /**
@@ -16,7 +18,7 @@ initTokenStore();
  * Has interceptors that attach the access token and handle 401 → refresh → retry.
  */
 export const api = axios.create({
-    baseURL: baseURL(),
+    baseURL: baseURL(mode),
     withCredentials: false, // tokens-only
 });
 
@@ -25,7 +27,7 @@ export const api = axios.create({
  * IMPORTANT: No interceptors here, so we don't accidentally attach the access token.
  */
 const refreshApi = axios.create({
-    baseURL: baseURL(),
+    baseURL: baseURL(mode),
     withCredentials: false,
 });
 
