@@ -1,6 +1,5 @@
 // src/api/http.js
 import axios from 'axios';
-import { baseURL } from './baseURL';
 import {
     initTokenStore,
     getAccessToken,
@@ -9,7 +8,7 @@ import {
     clearTokens,
 } from './tokens';
 
-const mode = process.env.ENVIRONMENT;
+const base_url = process.env.NEXT_PUBLIC_API_URL;
 
 initTokenStore();
 
@@ -18,7 +17,7 @@ initTokenStore();
  * Has interceptors that attach the access token and handle 401 → refresh → retry.
  */
 export const api = axios.create({
-    baseURL: baseURL(mode),
+    baseURL: base_url,
     withCredentials: false, // tokens-only
 });
 
@@ -27,7 +26,7 @@ export const api = axios.create({
  * IMPORTANT: No interceptors here, so we don't accidentally attach the access token.
  */
 const refreshApi = axios.create({
-    baseURL: baseURL(mode),
+    baseURL: base_url,
     withCredentials: false,
 });
 
