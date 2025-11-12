@@ -5,34 +5,44 @@ const { Envelope } = require('../../models');
 const mongoose = require('mongoose');
 
 // Delete an envelope by ID
-router.delete('/:id', requireAuth, async (req, res) => { // Added requireAuth for the specific route
+router.delete('/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
 
         // Validate the id is a valid mongoose ObjectId
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: "Invalid envelope ID" });
+            return res.status(400).json({ error: "invalid_envelope_id" });
         }
 
-        // Attempt to delete the envelope for this user
-        const envelope = await Envelope.findOneAndDelete({
+        // Fetch the envelope
+        const envelope = await Envelope.findOne({
             _id: id,
             user_id: req.userId,
         });
 
-        // If no envelope was found to delete it will return 404
         if (!envelope) {
-            return res.status(404).json({ error: "Envelope not found" });
+            return res.status(404).json({ error: "envelope_not_found" });
         }
-        // Return the deleted envelope
-        return res.json(envelope.toSafeJSON());
 
-        // If there is an error it will be caught and returned with error 500
+        // Ensure the envelope is empty before deletion
+        const balance = Number.isFinite(envelope.amount) ? envelope.amount : 0;
+        if (balance !== 0) {
+            return res.status(400).json({
+                error: "envelope_not_empty",
+                message: "You must move or allocate all funds before deleting this envelope.",
+                current_balance_cents: balance,
+            });
+        }
+
+        // Safe to delete
+        await envelope.deleteOne();
+        return res.json(envelope.toSafeJSON ? envelope.toSafeJSON() : envelope);
+
     } catch (error) {
-        console.error("Error envelope could not be deleted:", error);
-        return res.status(500).json({ error: 'Internal error could not delete' });
+        console.error("Error deleting envelope:", error);
+        return res.status(500).json({ error: "internal_error_could_not_delete" });
     }
 });
 
-// End of file dont write after
+// End of file don't write after
 module.exports = router;

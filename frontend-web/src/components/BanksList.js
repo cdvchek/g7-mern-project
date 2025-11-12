@@ -1,5 +1,7 @@
 "use client";
 
+const bankIdOf = (b) => b?.item_id ?? b?.id ?? b?._id ?? null;
+
 export default function BanksList({
     styles,
     banks = [],
@@ -9,7 +11,6 @@ export default function BanksList({
     starting = false,
 }) {
     const safeBanks = Array.isArray(banks) ? banks : [];
-    const getBankId = (b) => b?.id ?? b?.item_id ?? b?._id ?? b?.institution_id ?? null;
 
     return (
         <>
@@ -32,7 +33,7 @@ export default function BanksList({
                 {safeBanks.map((b, idx) => {
                     const instName = b?.institution_name || b?.name || "Bank";
                     const instId = b?.institution?.institution_id || b?.institution_id || "";
-                    const key = getBankId(b) ?? `bank-${idx}`;
+                    const key = bankIdOf(b) ?? `bank-${idx}`;
 
                     return (
                         <div
@@ -44,8 +45,9 @@ export default function BanksList({
                                 alignItems: "center",
                                 border: "1px solid #eee",
                                 padding: 12,
-                                borderRadius: 6,
+                                borderRadius: 8,
                                 cursor: "pointer",
+                                background: "#fff",
                             }}
                             title="Open accounts"
                         >

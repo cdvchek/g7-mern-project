@@ -18,13 +18,13 @@ router.get('/total', requireAuth, async (req, res) => {
                 // 2. Project a new field 'balance_cents'
                 // We must multiply the 'balance_current' (which is dollars) by 100
                 $project: {
-                    balance_cents: { 
-                        $multiply: [ 
+                    balance_cents: {
+                        $multiply: [
                             // 1. $ifNull: Use 0 if balance_current is missing or null
                             // 2. $toDouble: Convert the field (e.g., "100.50") to a number (100.50)
-                            { $toDouble: { $ifNull: ["$balance_current", 0] } }, 
-                            100 
-                        ] 
+                            { $toDouble: { $ifNull: ["$balance_current", 0] } },
+                            100
+                        ]
                     }
                 }
             },
@@ -32,13 +32,15 @@ router.get('/total', requireAuth, async (req, res) => {
                 // 3. Group them into a single doc and sum their 'balance_cents'
                 $group: {
                     _id: null,
-                    total: { $sum: "$balance_cents" } 
+                    total: { $sum: "$balance_cents" }
                 }
             }
         ]);
 
         // 4. Round the final result to avoid any floating point artifacts
         const totalBalanceCents = Math.round(result[0]?.total || 0);
+
+        console.log(totalBalanceCents);
 
         return res.json({ total_balance_cents: totalBalanceCents });
 

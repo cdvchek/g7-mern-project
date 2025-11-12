@@ -1,4 +1,4 @@
-const { Schema, model, models } = require('mongoose');
+const { Schema, model } = require('mongoose');
 
 const accountSchema = new Schema(
     {
@@ -21,6 +21,11 @@ const accountSchema = new Schema(
         balance_current: {
             type: Number,
             default: null,
+        },
+
+        allocation_current: {
+            type: Number,
+            default: 0,
         },
 
         tracking: { type: Boolean, default: false },

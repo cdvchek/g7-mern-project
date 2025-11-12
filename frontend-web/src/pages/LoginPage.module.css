@@ -1,239 +1,262 @@
 .page {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: transparent;
-  font-family: "Inter", sans-serif;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: transparent;
+    font-family: "Inter", sans-serif;
 }
 
 /* white centered box */
 .loginBox {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 360px;
-  padding: 40px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 360px;
+    padding: 40px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 /* logo */
 .logo {
-  width: 120px;
-  margin-bottom: 20px;
-  display: block;
+    width: 120px;
+    margin-bottom: 20px;
+    display: block;
 }
 
 /* logo sub text */
 .logoText {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 40px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 40px;
 }
 
 /* logo sub text option 2 (on resetpw page)*/
 .logoTextOp2 {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 40px;
-  text-align: center;
-  word-wrap: break-word;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 40px;
+    text-align: center;
+    word-wrap: break-word;
 }
 
 /* title */
 .title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 10px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 10px;
 }
 
 /* input field group */
 .inputGroup {
-  position: relative;
-  width: 340px;
-  margin-bottom: 16px;
-  margin-left: 0;
-  margin-right: auto;
-  text-align: left;
+    position: relative;
+    width: 340px;
+    margin-bottom: 16px;
+    margin-left: 0;
+    margin-right: auto;
+    text-align: left;
 }
 
 /* input boxes */
 .input {
-  width: 100%;
-  padding: 12px 10px;
-  border: 1px solid #d3d3d3;
-  border-radius: 6px;
-  font-size: 15px;
-  outline: none;
-  transition: border-color 0.2s;
+    width: 100%;
+    padding: 12px 10px;
+    border: 1px solid #d3d3d3;
+    border-radius: 6px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
 }
 
 /* code input group */
 .codeInputGroup {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
 /* small input box */
 .codeInputBox {
-  width: 48px;
-  height: 48px;
-  text-align: center;
-  font-size: 22px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+    width: 48px;
+    height: 48px;
+    text-align: center;
+    font-size: 22px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .codeInputBox:focus {
-  border-color: #007aff;
-  box-shadow: 0 0 5px rgba(0, 122, 255, 0.3);
+    border-color: #007aff;
+    box-shadow: 0 0 5px rgba(0, 122, 255, 0.3);
 }
 
 
 /* eye button */
 .iconButton {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: #1a1a1a;
-  font-size: 14px;
-  padding: 4px 6px;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #1a1a1a;
+    font-size: 14px;
+    padding: 4px 6px;
 }
 
 .iconButton:hover {
-  opacity: 0.8;
+    opacity: 0.8;
 }
 
 /* forgot password link */
 .forgot {
-  align-self: center;
-  margin-bottom: 24px;
-  color: #007aff;
-  font-size: 14px;
-  text-decoration: none;
+    align-self: center;
+    color: #007aff;
+    font-size: 14px;
+    text-decoration: none;
 }
 
 .forgot:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 /* return login */
 .returnLogin {
-  align-self: center;
-  margin-top: 15px;
-  margin-bottom: 24px;
-  color: #007aff;
-  font-size: 14px;
-  text-decoration: none;
+    align-self: center;
+    margin-top: 15px;
+    margin-bottom: 24px;
+    color: #007aff;
+    font-size: 14px;
+    text-decoration: none;
 }
 
 .returnLogin:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 /* black login button */
 .loginButton {
-  width: 100%;
-  padding: 12px 0;
-  background-color: #1a1a1a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.2s;
+    width: 100%;
+    padding: 12px 0;
+    background-color: #1a1a1a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .loginButton:hover {
-  background-color: #333;
+    background-color: #333;
 }
 
 /* Separator */
 .separatorContainer {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  margin: 20px 0;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 20px 0;
 }
 
 .separatorLine {
-  flex: 1;
-  height: 1px;
-  background-color: #d3d3d3;
+    flex: 1;
+    height: 1px;
+    background-color: #d3d3d3;
 }
 
 .separatorText {
-  margin: 0 10px;
-  font-size: 14px;
-  color: #888;
+    margin: 0 10px;
+    font-size: 14px;
+    color: #888;
 }
 
 /* Sign Up button */
 .signupButton {
-  width: 100%;
-  padding: 12px 0;
-  background-color: #007aff; /* blue */
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.2s;
+    width: 100%;
+    padding: 12px 0;
+    background-color: #007aff;
+    /* blue */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .signupButton:hover {
-  background-color: #005bb5;
+    background-color: #005bb5;
 }
 
 
 /* eye toggle button */
 .eyeButton {
-  position: absolute;
-  right: -10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .eyeButton:hover {
-  transform: translateY(-50%) scale(1.2);
-  opacity: 0.8;
+    transform: translateY(-50%) scale(1.2);
+    opacity: 0.8;
 }
 
 /* web background */
 .bgVideo {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -1;
-  pointer-events: none; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+    pointer-events: none;
 }
 
+.errorMessage {
+    color: #ff5a5a;
+    font-size: 0.9rem;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    text-align: center;
+}
 
+.form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+
+.forgotRow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    margin-bottom: 24px;
+}

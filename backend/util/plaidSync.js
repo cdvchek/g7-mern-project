@@ -2,6 +2,13 @@ const { plaid } = require('../connection/plaid');
 const { BankConnection, Account, Transaction } = require('../models');
 const { decrypt } = require('./crypto');
 
+const toCents = (v) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return null;
+    const cents = Math.round(n * 100);
+    return cents === 0 ? 0 : cents;
+};
+
 async function refreshAccountsForItem(item_id) {
     if (!item_id) throw new Error('missing_item_id');
 
@@ -45,8 +52,7 @@ async function refreshAccountsForItem(item_id) {
                     type: a.type || '',
                     subtype: a.subtype || '',
 
-                    // Cached balances (don’t touch app flags)
-                    balance_current: a?.balances?.current || null,
+                    balance_current: toCents(a?.balances?.current),
                 },
                 {
                     upsert: true,
@@ -59,6 +65,7 @@ async function refreshAccountsForItem(item_id) {
 
     return upserts;
 }
+
 
 /**
  * Convenience: refresh all connections for a given user (optional utility).

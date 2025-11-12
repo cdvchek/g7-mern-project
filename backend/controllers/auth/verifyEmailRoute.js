@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { User } = require("../../models");
-const { hashToken } = require("../../util/crypto");
+const { sendMail } = require('../../util/resend');
+const { createToken, hashToken } = require("../../util/crypto");
 
 const TOKEN_TTL_MIN = Number(process.env.EMAIL_TOKEN_TTL_MINUTES);
 
@@ -36,7 +37,7 @@ router.post('/resend', async (req, res) => {
         const { email } = req.body
         const normEmail = String(email).trim().toLowerCase();
 
-        const user = await User.findOne({ email: normEmail }).lean(); // .lean() cuts out a lot of unwanted stuff
+        const user = await User.findOne({ email: normEmail });
         if (!user) {
             return res.status(409).json({ error: "Email not found." });
         }

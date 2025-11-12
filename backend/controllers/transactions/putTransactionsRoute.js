@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const requireAuth = require('../../middleware/requireAuth');
-const { Transaction, Envelope } = require('../../models');
+const { Transaction, Envelope, Account } = require('../../models');
 const mongoose = require('mongoose');
 
 router.put('/:id', requireAuth, async (req, res) => {
@@ -55,92 +55,87 @@ router.put('/:id', requireAuth, async (req, res) => {
     }
 });
 
-// PUT /allocate/:id
+// PUT /api/transactions/allocate/:id
 router.put('/allocate/:id', requireAuth, async (req, res) => {
     const session = await mongoose.startSession();
     try {
         const user_id = req.userId;
         const transactionId = req.params.id;
-        const { splits } = req.body;
+        const { splits } = req.body || {};
 
         // ---- Basic validations
         if (!mongoose.Types.ObjectId.isValid(transactionId)) {
-            return res.status(400).json({ error: 'Invalid transaction ID.' });
+            return res.status(400).json({ error: 'invalid_transaction_id' });
         }
         if (!Array.isArray(splits) || splits.length === 0) {
-            return res.status(400).json({ error: 'splits must be a non-empty array.' });
+            return res.status(400).json({ error: 'splits_must_be_non_empty_array' });
         }
-
-        for (let i = 0; i < splits.length; i++) {
-            const split = splits[i];
-            if (!split || !split.envelope_id || !mongoose.Types.ObjectId.isValid(split.envelope_id)) {
-                return res.status(400).json({ error: 'Invalid envelope ID in splits.' });
+        for (const s of splits) {
+            if (!s || !s.envelope_id || !mongoose.Types.ObjectId.isValid(s.envelope_id)) {
+                return res.status(400).json({ error: 'invalid_envelope_id_in_splits' });
             }
-            if (
-                typeof split.amount_cents !== 'number' ||
-                !Number.isInteger(split.amount_cents) ||
-                split.amount_cents <= 0
-            ) {
-                return res.status(400).json({
-                    error: 'Each split.amount_cents must be a positive integer (cents).'
-                });
+            if (typeof s.amount_cents !== 'number' || !Number.isInteger(s.amount_cents) || s.amount_cents <= 0) {
+                return res.status(400).json({ error: 'split_amount_cents_must_be_positive_integer' });
             }
         }
 
-        // ---- Load the target transaction
+        // ---- Load transaction
         const tx = await Transaction.findOne({ _id: transactionId, user_id });
-        if (!tx) {
-            return res.status(404).json({ error: 'Transaction not found.' });
-        }
-        if (tx.allocated) {
-            return res.status(409).json({ error: 'Transaction is already allocated.' });
+        if (!tx) return res.status(404).json({ error: 'transaction_not_found' });
+
+        const absTotal = Math.abs(Number(tx.amount || 0));
+        const already = Math.max(0, Number(tx.allocated || 0));
+        const remaining = Math.max(0, absTotal - already);
+        if (remaining === 0) {
+            return res.status(409).json({ error: 'transaction_already_fully_allocated' });
         }
 
-        // ---- Enforce "oldest unallocated"
-        const oldestUnalloc = await Transaction.findOne({ user_id, allocated: false })
-            .sort({ posted_at: 1, createdAt: 1, _id: 1 })
-            .select('_id');
-
-        if (!oldestUnalloc || String(oldestUnalloc._id) !== String(tx._id)) {
+        // ---- Oldest-first (oldest where allocated < |amount|)
+        const oldestNeedingAgg = await Transaction.aggregate([
+            { $match: { user_id: new mongoose.Types.ObjectId(user_id) } },
+            { $addFields: { absAmount: { $abs: "$amount" } } },
+            { $match: { $expr: { $lt: ["$allocated", "$absAmount"] } } },
+            { $sort: { posted_at: 1, createdAt: 1, _id: 1 } },
+            { $limit: 1 }
+        ]);
+        const oldestNeeding = oldestNeedingAgg[0];
+        if (!oldestNeeding || String(oldestNeeding._id) !== String(tx._id)) {
             return res.status(409).json({
-                error: 'Only the oldest unallocated transaction can be allocated.',
-                oldest_unallocated_id: oldestUnalloc?._id
+                error: 'must_allocate_oldest_first',
+                oldest_unallocated_id: oldestNeeding ? oldestNeeding._id : null
             });
         }
 
-        // ---- Validate split totals
+        // ---- Allow PARTIAL: total must be > 0 and <= remaining
         const totalSplitCents = splits.reduce((s, r) => s + r.amount_cents, 0);
-        const neededCents = Math.abs(tx.amount_cents);
-        if (totalSplitCents !== neededCents) {
+        if (totalSplitCents <= 0 || totalSplitCents > remaining) {
             return res.status(400).json({
-                error: 'Splits must sum exactly to the absolute value of the transaction amount.',
-                needed_cents: neededCents,
+                error: 'splits_must_be_positive_and_not_exceed_remaining',
+                remaining_cents: remaining,
                 provided_cents: totalSplitCents
             });
         }
 
-        // ---- Verify envelopes exist & belong to user
-        const envelopeIds = splits.map((s) => s.envelope_id);
-        const envelopes = await Envelope.find({ _id: { $in: envelopeIds }, user_id }).lean();
-        if (envelopes.length !== envelopeIds.length) {
-            return res.status(404).json({ error: 'One or more envelopes not found for this user.' });
+        // ---- Verify envelopes belong to user
+        const envelopeIds = splits.map(s => new mongoose.Types.ObjectId(s.envelope_id));
+        const envs = await Envelope.find({ _id: { $in: envelopeIds }, user_id }).lean();
+        if (envs.length !== envelopeIds.length) {
+            return res.status(404).json({ error: 'one_or_more_envelopes_not_found' });
         }
+        const envMap = new Map(envs.map(e => [String(e._id), e]));
 
-        // Quick lookup
-        const envMap = new Map(envelopes.map((e) => [String(e._id), e]));
-
-        // ---- For spending (negative), prevent going below zero (optional strictness)
-        if (tx.amount_cents < 0) {
+        // ---- Optional strictness: prevent negatives on spend
+        if (tx.amount < 0) {
             for (const s of splits) {
                 const e = envMap.get(String(s.envelope_id));
-                const current = e?.amount ?? 0; // Int32 cents
-                const next = current - s.amount_cents;
-                if (next < 0) {
+                const current = Number.isFinite(e?.amount) ? Number(e.amount) : 0;
+                if (current - s.amount_cents < 0) {
                     return res.status(400).json({
-                        error: `Envelope "${e.name}" would go negative.`,
-                        envelope_id: e._id,
+                        error: 'envelope_would_go_negative',
+                        envelope_id: e?._id,
+                        envelope_name: e?.name || 'Envelope',
                         current_balance_cents: current,
-                        attempted_debit_cents: s.amount_cents
+                        debit_cents: s.amount_cents
                     });
                 }
             }
@@ -148,53 +143,68 @@ router.put('/allocate/:id', requireAuth, async (req, res) => {
 
         // ---- Atomic apply
         await session.withTransaction(async () => {
-            // Build $inc ops against Envelope.amount (Int32 cents)
-            const incOps = splits.map((s) => ({
-                updateOne: {
-                    filter: { _id: s.envelope_id, user_id },
-                    update: {
-                        $inc: {
-                            amount: tx.amount_cents > 0 ? +s.amount_cents : -s.amount_cents
+            // 1) Envelope movements (income -> +, spend -> -)
+            if (splits.length) {
+                const bulkOps = splits.map(s => ({
+                    updateOne: {
+                        filter: { _id: s.envelope_id, user_id },
+                        update: {
+                            $inc: { amount: tx.amount > 0 ? +s.amount_cents : -s.amount_cents }
                         }
                     }
-                }
-            }));
-
-            if (incOps.length) {
-                await Envelope.bulkWrite(incOps, { session });
+                }));
+                await Envelope.bulkWrite(bulkOps, { session });
             }
 
-            // Mark transaction allocated (+ optionally persist allocations)
-            const setUpdate = {
-                allocated: true,
-                updatedAt: new Date()
-                // allocations: splits, // <- add to schema if you want an audit trail
-            };
-
+            // 2) Increment transaction.allocated by this partial amount
             const updatedTx = await Transaction.findOneAndUpdate(
-                { _id: transactionId, user_id },
-                { $set: setUpdate },
-                { new: true, runValidators: true, session }
+                { _id: tx._id, user_id },
+                { $inc: { allocated: totalSplitCents }, $set: { updatedAt: new Date() } },
+                { new: true, session }
             );
 
-            // Return updated envelopes (normalized)
-            const freshEnvs = await Envelope.find(
-                { _id: { $in: envelopeIds }, user_id },
-                null,
+            // 3) Maintain Account.allocation_current (cents)
+            await Account.updateOne(
+                { _id: updatedTx.account_id, user_id },
+                {
+                    $inc: {
+                        allocation_current: updatedTx.amount < 0 ? -totalSplitCents : +totalSplitCents
+                    }
+                },
                 { session }
-            );
+            ).exec();
+
+            // 4) If an UNTRACKING txn (from_account_tracking && amount < 0) is now fully allocated,
+            //    purge ALL transactions for this account and zero allocation_current.
+            const nowAbsTotal = Math.abs(Number(updatedTx.amount || 0));
+            const nowAllocated = Math.max(0, Number(updatedTx.allocated || 0));
+            const nowRemaining = Math.max(0, nowAbsTotal - nowAllocated);
+
+            if (updatedTx.from_account_tracking === true && updatedTx.amount < 0 && nowRemaining === 0) {
+                await Transaction.deleteMany(
+                    { user_id, account_id: updatedTx.account_id },
+                    { session }
+                );
+                await Account.updateOne(
+                    { _id: updatedTx.account_id, user_id },
+                    { $set: { allocation_current: 0 } },
+                    { session }
+                ).exec();
+            }
+
+            // Respond (tx may be null if purged)
+            const txOut = await Transaction.findOne({ _id: transactionId, user_id }, null, { session });
+            const freshEnvs = await Envelope.find({ _id: { $in: envelopeIds }, user_id }, null, { session });
 
             res.status(200).json({
                 ok: true,
-                transaction: updatedTx,
-                envelopes: freshEnvs.map((e) => e.toSafeJSON())
+                transaction: txOut ? (txOut.toSafeJSON ? txOut.toSafeJSON() : txOut) : null,
+                envelopes: freshEnvs.map(e => (e.toSafeJSON ? e.toSafeJSON() : e)),
             });
         });
-    } catch (error) {
-        console.error('Allocation error:', error);
-        if (!res.headersSent) {
-            res.status(500).json({ error: 'Internal server error during allocation.' });
-        }
+    } catch (err) {
+        console.error('ALLOCATE_TXN_ERROR:', err);
+        if (!res.headersSent) res.status(500).json({ error: 'internal_error' });
     } finally {
         session.endSession();
     }

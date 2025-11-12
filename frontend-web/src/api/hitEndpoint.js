@@ -34,6 +34,7 @@ export const hitEndpoint = async (type, body, endpoint, route_name, post = (data
     } catch (err) {
         console.error(route_name + ' failed');
         console.error('Backend Endpoint Failed: ', err);
+        ret.data = err?.response?.data || {};
         ret.msg = route_name + ' failed';
         error();
     }

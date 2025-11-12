@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import styles from "./LoginPage.module.css";
 import FormInput from "../components/FormInput";
-import { startPasswordResetAPI } from "../api";
+import { resendEmailAPI } from "../api";
 
-export default function ForgotPassword() {
+export default function ResendVerificationEmail() {
     const [email, setEmail] = useState("");
     const [isSuccess, setIsSuccess] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
@@ -30,7 +30,7 @@ export default function ForgotPassword() {
         if (email.trim() === "") return showEmailEmpty();
         if (!checkEmailStructure()) return showBadEmail();
 
-        const res = await startPasswordResetAPI({ email });
+        const res = await resendEmailAPI({ email });
 
         if (res.code == 0) {
             setIsSuccess(true);
@@ -69,7 +69,7 @@ export default function ForgotPassword() {
                     <h2 className={styles.title}>Email Sent!</h2>
 
                     <p className={styles.logoTextOp2}>
-                        If an account exists with <b>{email}</b>, you will receive an email shortly with a link to reset your password.
+                        If an account exists with <b>{email}</b>, you will receive an email shortly with a link to verify your email.
                     </p>
 
                     <a href="/" className={styles.returnLogin}>
@@ -96,7 +96,7 @@ export default function ForgotPassword() {
             <div className={styles.loginBox}>
                 <img src="/budgielogo.png" alt="logo" className={styles.logo} />
                 <h2 className={styles.title}>Reset Password</h2>
-                <p className={styles.logoTextOp2}>Please enter your email to receive a password reset link</p>
+                <p className={styles.logoTextOp2}>Please enter your email to receive a email verification link</p>
 
                 <form onSubmit={onReset}>
                     <FormInput name={"Email"} value={email} setValue={setEmail} show={true} toggleShow={() => { }} isHidable={false} styles={styles} />
@@ -105,7 +105,7 @@ export default function ForgotPassword() {
                         <p className={styles.errorMessage}>{errorMessage}</p>
                     )}
 
-                    <button className={styles.loginButton} onClick={(e) => onReset(e)}>SEND RESET LINK</button>
+                    <button className={styles.loginButton} onClick={(e) => onReset(e)}>SEND VERIFICATION LINK</button>
                 </form>
 
                 <a href="/" className={styles.returnLogin}>

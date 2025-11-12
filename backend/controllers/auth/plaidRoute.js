@@ -8,7 +8,6 @@ const { BankConnection } = require('../../models');
 const { refreshAccountsForItem } = require('../../util/plaidSync');
 const requireAuth = require('../../middleware/requireAuth');
 
-// 1) Create Link token for frontend
 router.post('/create-link-token', requireAuth, async (req, res) => {
     try {
         const r = await plaid.linkTokenCreate({
@@ -26,7 +25,6 @@ router.post('/create-link-token', requireAuth, async (req, res) => {
     }
 });
 
-// 2) Exchange public_token -> access_token, store connection, then upsert accounts
 router.post('/exchange-public-token', requireAuth, async (req, res) => {
     try {
         const { public_token, institution } = req.body || {};

@@ -11,7 +11,6 @@ router.get('/tracked', requireAuth, async (req, res) => {
     const list = await Account.find({
         user_id: req.userId,
         tracking: true,
-        hidden: { $ne: true },
     })
         .sort({ name: 1 })
         .lean();
@@ -27,5 +26,26 @@ router.get('/tracked', requireAuth, async (req, res) => {
         })),
     });
 });
+
+router.get('/balance', requireAuth, async (req, res) => {
+    try {
+        const list = await Account.find({
+            user_id: req.userId,
+            tracking: true,
+        });
+
+        let sum = 0;
+        for (let i = 0; i < list.length; i++) {
+            const e = list[i];
+            console.log(e);
+            sum += e.balance_current;
+        }
+
+        res.json({ balance: sum });
+    } catch (error) {
+        console.error("CANT GET BALANCE:", error);
+        rse.status(500).json({ error: 'cant get balance' });
+    }
+})
 
 module.exports = router;

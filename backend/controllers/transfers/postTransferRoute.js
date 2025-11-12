@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 
 router.post('/', requireAuth, async (req, res) => {
     try {
-        const { from_envelope_id, to_envelope_id, amount, notes } = req.body || {};
+        const { from_envelope_id, to_envelope_id, amount } = req.body || {};
         const user_id = req.userId;
 
         // Validating required fields
@@ -75,7 +75,7 @@ router.post('/', requireAuth, async (req, res) => {
                 to_envelope_id: to_envelope_id,
                 amount: amount,
                 occured_at: new Date(),
-                notes: notes || ''
+                notes: ''
             }], { session });
 
             // Commit the transaction transfer

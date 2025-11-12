@@ -10,7 +10,7 @@ export default function ResetPassword() {
     const searchParams = useSearchParams();
     const videoRef = useRef(null);
 
-    const [status, setStatus] = useState("verifying"); // verifying -> form | error | success
+    const [status, setStatus] = useState("verifying");
     const [message, setMessage] = useState("Checking reset link...");
     const [email, setEmail] = useState("");
     const [token, setToken] = useState("");
@@ -26,7 +26,6 @@ export default function ResetPassword() {
         if (videoRef.current) videoRef.current.playbackRate = 0.7;
     }, []);
 
-    // just parse params; do NOT call resetPasswordAPI here
     useEffect(() => {
         const t = searchParams.get("token") || "";
         const e = searchParams.get("email") || "";
@@ -107,34 +106,36 @@ export default function ResetPassword() {
                         <h2 className={styles.title}>Set New Password</h2>
                         {message && <p className={styles.logoTextOp2}>{message}</p>}
 
-                        <FormInput
-                            name={"New Password"}
-                            value={password}
-                            setValue={setPassword}
-                            show={showPassword}
-                            toggleShow={() => setShowPassword((s) => !s)}
-                            isHidable={true}
-                            styles={styles}
-                        />
+                        <form onSubmit={onSubmitNewPassword}>
+                            <FormInput
+                                name={"New Password"}
+                                value={password}
+                                setValue={setPassword}
+                                show={showPassword}
+                                toggleShow={() => setShowPassword((s) => !s)}
+                                isHidable={true}
+                                styles={styles}
+                            />
 
-                        <FormInput
-                            name={"Confirm New Password"}
-                            value={confirmPassword}
-                            setValue={setConfirmPassword}
-                            show={showConfirmPassword}
-                            toggleShow={() => setShowConfirmPassword((s) => !s)}
-                            isHidable={true}
-                            styles={styles}
-                        />
+                            <FormInput
+                                name={"Confirm New Password"}
+                                value={confirmPassword}
+                                setValue={setConfirmPassword}
+                                show={showConfirmPassword}
+                                toggleShow={() => setShowConfirmPassword((s) => !s)}
+                                isHidable={true}
+                                styles={styles}
+                            />
 
-                        <button
-                            className={styles.loginButton}
-                            onClick={onSubmitNewPassword}
-                            disabled={submitting}
-                            aria-busy={submitting}
-                        >
-                            {submitting ? "Saving..." : "Save Password"}
-                        </button>
+                            <button
+                                className={styles.loginButton}
+                                onClick={onSubmitNewPassword}
+                                disabled={submitting}
+                                aria-busy={submitting}
+                            >
+                                {submitting ? "Saving..." : "Save Password"}
+                            </button>
+                        </form>
 
                         <a href="/" className={styles.returnLogin} style={{ marginTop: 12 }}>
                             Cancel & Return to Login

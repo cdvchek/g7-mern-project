@@ -21,7 +21,7 @@ export default function DashboardAccounts() {
     const [accountsByBank, setAccountsByBank] = useState({}); // { bankId: Account[] }
     const [loading, setLoading] = useState(false);
 
-    // ---- Plaid Link state (single instance here) ----
+    // ---- Plaid Link state ----
     const [linkToken, setLinkToken] = useState(null);
     const [wantOpen, setWantOpen] = useState(false);
     const [starting, setStarting] = useState(false);
@@ -29,12 +29,10 @@ export default function DashboardAccounts() {
     const { open, ready } = usePlaidLink({
         token: linkToken || "",
         onSuccess: async (public_token, metadata) => {
-            console.log("Token:", public_token, "Metadata:", metadata);
-
             try {
-                const institution = metadata.institution;
+                const institution = metadata?.institution;
                 await exchangeLinkTokenAPI({ public_token, institution });
-                await fetchBanks(); // refresh list after successful exchange
+                await fetchBanks();
             } finally {
                 setLinkToken(null);
                 setWantOpen(false);
@@ -57,7 +55,7 @@ export default function DashboardAccounts() {
         try {
             setStarting(true);
             const res = await createLinkTokenAPI();
-            const token = res.data.link_token;
+            const token = res?.data?.link_token;
             if (!token) throw new Error("No link token returned");
             setLinkToken(token);
             setWantOpen(true);
@@ -72,7 +70,7 @@ export default function DashboardAccounts() {
         setLoading(true);
         try {
             const res = await getBanksAPI();
-            setBanks(res.data);
+            setBanks(res?.data ?? []);
         } catch {
             setBanks([]);
         } finally {
@@ -95,7 +93,8 @@ export default function DashboardAccounts() {
     }, []);
 
     function getBankId(b) {
-        return b.item_id;
+        // item_id is your canonical bank identifier
+        return b?.item_id ?? b?.id ?? b?._id ?? null;
     }
 
     async function handleOpenBank(bank) {
@@ -106,19 +105,22 @@ export default function DashboardAccounts() {
     }
 
     async function handleToggleTracking(bankId, accountId, next) {
+        // optimistic
         setAccountsByBank((m) => ({
             ...m,
             [bankId]: (m[bankId] || []).map((a) =>
-                a.id === accountId ? { ...a, tracking: next } : a
+                String(a.id) === String(accountId) ? { ...a, tracking: !!next } : a
             ),
         }));
+
         try {
-            await setAccountTrackingAPI(accountId, { item_id: bankId, tracking: next });
+            await setAccountTrackingAPI(accountId, { item_id: bankId, tracking: !!next });
         } catch {
+            // revert
             setAccountsByBank((m) => ({
                 ...m,
                 [bankId]: (m[bankId] || []).map((a) =>
-                    a.id === accountId ? { ...a, tracking: !next } : a
+                    String(a.id) === String(accountId) ? { ...a, tracking: !next } : a
                 ),
             }));
         }
@@ -128,9 +130,14 @@ export default function DashboardAccounts() {
         try {
             await deleteBankAPI(itemId);
             setActiveBankId(null);
-            setBanks(prev => prev.filter(item => item.item_id !== itemId));
-        } catch {
-
+            setBanks((prev) => prev.filter((b) => b.item_id !== itemId));
+            setAccountsByBank((m) => {
+                const copy = { ...m };
+                delete copy[itemId];
+                return copy;
+            });
+        } catch (e) {
+            console.error("DELETE BANK", e);
         }
     }
 
@@ -142,7 +149,6 @@ export default function DashboardAccounts() {
         <div className={styles.card}>
             {activeBank ? (
                 <BankDetail
-                    styles={styles}
                     bank={activeBank}
                     accounts={activeAccounts}
                     onBack={() => setActiveBankId(null)}
@@ -151,12 +157,12 @@ export default function DashboardAccounts() {
                 />
             ) : (
                 <BanksList
-                    styles={styles}
                     banks={banks}
                     loading={loading}
                     onOpenBank={handleOpenBank}
-                    onConnectBank={startPlaid}    // <- BanksList triggers this; Plaid lives here
-                    starting={starting}           // optional: show spinner on button
+                    onConnectBank={startPlaid}
+                    starting={starting}
+                    styles={styles}
                 />
             )}
         </div>
