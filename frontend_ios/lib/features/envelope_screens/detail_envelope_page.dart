@@ -3,6 +3,7 @@ import 'package:frontend_ios/core/api/api_service.dart';
 import 'package:frontend_ios/core/models/envelope.dart';
 import 'package:frontend_ios/core/models/transfer.dart';
 import 'package:frontend_ios/features/envelope_screens/edit_delete_envelope.dart';
+import 'package:intl/intl.dart';
 
 class DetailEnvelopePage extends StatefulWidget {
   const DetailEnvelopePage({super.key, required this.envelope});
@@ -212,6 +213,12 @@ class _DetailEnvelopePageState extends State<DetailEnvelopePage> {
                               color: Color(0xFF7C8097),
                             ),
                           ),
+                          const SizedBox(height: 4),
+                          Text('${_buildTargetString(_envelope)}', 
+                            style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF7C8097))
+                          ),
                           const SizedBox(height: 8),
                           Container(
                             height: 8,
@@ -230,25 +237,25 @@ class _DetailEnvelopePageState extends State<DetailEnvelopePage> {
                         style: const TextStyle(color: Colors.red),
                       ),
                     ],
-                    const SizedBox(height: 32),
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Recent Transactions',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1E1F3D),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _TransferListCard(
-                      isLoading: _isTransfersLoading,
-                      errorMessage: _transfersError,
-                      transfers: _transfers.take(4).toList(),
-                      envelopeId: _envelope.id,
-                    ),
+                    // const SizedBox(height: 32),
+                    // const Align(
+                    //   alignment: Alignment.centerLeft,
+                    //   child: Text(
+                    //     'Recent Transactions',
+                    //     style: TextStyle(
+                    //       fontSize: 18,
+                    //       fontWeight: FontWeight.w600,
+                    //       color: Color(0xFF1E1F3D),
+                    //     ),
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 16),
+                    // _TransferListCard(
+                    //   isLoading: _isTransfersLoading,
+                    //   errorMessage: _transfersError,
+                    //   transfers: _transfers.take(4).toList(),
+                    //   envelopeId: _envelope.id,
+                    // ),
                   ],
                 ),
               ),
@@ -278,16 +285,33 @@ class _DetailEnvelopePageState extends State<DetailEnvelopePage> {
     return const Color(0xFF1E1F3D);
   }
 
-  String _formatCurrency(int amount) {
-    final buffer = StringBuffer();
-    final digits = amount.abs().toString();
-    for (int i = 0; i < digits.length; i++) {
-      if (i != 0 && (digits.length - i) % 3 == 0) {
-        buffer.write(',');
-      }
-      buffer.write(digits[i]);
+  String _formatCurrency(int amountInCents) {
+    // Convert cents (int) to dollars (double)
+    final double amountInDollars = amountInCents / 100.0;
+
+    // Create a formatter that handles commas and $
+    final formatter = NumberFormat.currency(
+      locale: 'en_US', // This gives you 1,000.00
+      symbol: '\$',
+      decimalDigits: 2,
+    );
+    return formatter.format(amountInDollars);
+  }
+
+  String _buildTargetString(Envelope envelope) {
+    final int targetCents = envelope.monthlyTarget ?? 0;
+    
+    if (targetCents <= 0) {
+      return 'Goal not set';
     }
-    return '\$${amount < 0 ? '-' : ''}$buffer';
+    
+    final int amountCents = envelope.amount;
+    
+    // Calculate percentage, clamp ensures it's between 0 and 100
+    final double percent = targetCents == 0 ? 0 : ((amountCents / targetCents) * 100).clamp(0, 100);
+    
+    // Use the formatter for the target amount
+    return '(${percent.toStringAsFixed(1)}% done)';
   }
 }
 

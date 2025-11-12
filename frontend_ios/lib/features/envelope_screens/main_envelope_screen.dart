@@ -5,6 +5,7 @@ import 'package:frontend_ios/features/envelope_screens/create_envelope.dart';
 import 'package:frontend_ios/features/envelope_screens/detail_envelope_page.dart';
 import 'package:frontend_ios/features/envelope_screens/edit_delete_envelope.dart';
 import 'package:frontend_ios/features/envelope_screens/transfer_envelope.dart';
+import 'package:intl/intl.dart';
 
 class MainEnvelopeScreen extends StatefulWidget {
   const MainEnvelopeScreen({super.key});
@@ -282,6 +283,35 @@ class _EnvelopeCard extends StatelessWidget {
     return const Color(0xFF1E1F3D);
   }
 
+  String _formatCurrency(int amountInCents) {
+    // Convert cents (int) to dollars (double)
+    final double amountInDollars = amountInCents / 100.0;
+
+    // Create a formatter that handles commas and $
+    final formatter = NumberFormat.currency(
+      locale: 'en_US', // This gives you 1,000.00
+      symbol: '\$',
+      decimalDigits: 2,
+    );
+    return formatter.format(amountInDollars);
+  }
+
+  String _buildTargetString(Envelope envelope) {
+    final int targetCents = envelope.monthlyTarget ?? 0;
+    
+    if (targetCents <= 0) {
+      return 'Goal not set';
+    }
+    
+    final int amountCents = envelope.amount;
+    
+    // Calculate percentage, clamp ensures it's between 0 and 100
+    final double percent = targetCents == 0 ? 0 : ((amountCents / targetCents) * 100).clamp(0, 100);
+    
+    // Use the formatter for the target amount
+    return 'Goal: ${_formatCurrency(targetCents)} (${percent.toStringAsFixed(1)}% done)';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -314,7 +344,7 @@ class _EnvelopeCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${envelope.name} - \$${envelope.amount}',
+                          '${envelope.name} - ${_formatCurrency(envelope.amount)}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -323,7 +353,7 @@ class _EnvelopeCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${envelope.monthlyTarget != null && envelope.monthlyTarget! > 0 ? 'Target: \$${envelope.monthlyTarget} (${((envelope.amount / envelope.monthlyTarget!) * 100).toStringAsFixed(1)}% done\)' : 'Not set (0.0% done)'}',
+                          _buildTargetString(envelope),
                           // envelope.monthlyTarget > 0
                           //     ? 'Goal: \$${envelope.monthlyTarget}'
                           //     : 'Goal not set',

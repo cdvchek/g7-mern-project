@@ -14,8 +14,8 @@ const transactionSchema = new Schema(
         amount_cents: { type: Schema.Types.Int32, required: true },
 
         allocated: {
-            type: Boolean,
-            default: false,
+            type: Number,
+            default: 0,
         },
 
         posted_at: { type: Date, required: true, index: true },

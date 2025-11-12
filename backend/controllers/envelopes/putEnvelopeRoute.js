@@ -9,7 +9,7 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
 
         // Extract the envelope ID from the URL parameters
         const { id } = req.params;
-        const { name, color, monthly_target, order, description } = req.body;
+        const { name, color, amount, monthly_target, order, description } = req.body;
 
         // Validate the id is a valid ObjectId if not return error 400
         if (!require('mongoose').Types.ObjectId.isValid(id)) {
@@ -34,6 +34,14 @@ router.put('/:id', requireAuth, async (req, res) => { // Added requireAuth for t
             }
             // Update color after validation
             updates.color = color.trim();
+        }
+
+        if (amount !== undefined) {
+            const parsedAmount = Number(amount);
+            if (!Number.isInteger(parsedAmount) || parsedAmount < 0) {
+                return res.status(400).json({ error: "Amount must be a positive integer" });
+            }
+            updates.amount = parsedAmount;
         }
 
         if (description !== undefined) {

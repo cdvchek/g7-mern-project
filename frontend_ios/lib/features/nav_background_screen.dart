@@ -3,7 +3,7 @@ import 'package:frontend_ios/core/api/api_service.dart';
 import 'package:frontend_ios/features/auth/login_screen.dart';
 import 'package:frontend_ios/features/dashboard_screen.dart';
 import 'package:frontend_ios/features/envelope_screens/main_envelope_screen.dart';
-import 'package:frontend_ios/features/accounts_screens/main_accounts_screen.dart';
+import 'package:frontend_ios/features/accounts_screens/bank_list_screen.dart';
 import 'package:frontend_ios/features/transactions_screens/transaction_screen.dart';
 import 'package:frontend_ios/features/settings_screen/settings_screen.dart';
 import 'package:frontend_ios/core/models/user.dart';
@@ -25,8 +25,8 @@ class _NavBkgrdScreenState extends State<NavBkgrdScreen> {
   static const List<Widget> _pages = <Widget>[
     DashboardScreen(), // index 0
     MainEnvelopeScreen(), // index 1
-    MainAccountsScreen(), // index 2
-    TransactionScreen(), // index 3
+    BanksListScreen(), // index 2
+    TransactionsScreen(), // index 3
   ];
 
   @override

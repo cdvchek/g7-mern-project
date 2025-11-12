@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_ios/core/api/api_service.dart';
 import 'package:frontend_ios/core/models/envelope.dart';
+import 'package:frontend_ios/core/models/transaction.dart';
 import 'package:frontend_ios/features/envelope_screens/detail_envelope_page.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -17,7 +19,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? _errorMessage;
   List<Envelope> _envelopes = [];
 
-  int _totalBalance = 10000; // Placeholder total balance
+  int _totalBalance = 0; // Placeholder total balance
+  int _availableToDeallocateCents = 0; 
   int _touchedIndex = -1; // For pie chart interaction 
 
   @override
@@ -33,14 +36,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
 
     try {
-      final envelopes = await _apiService.fetchEnvelopes();
-      // Uncomment when total balance API is ready
-      // final balance = await _apiService.fetchTotalBalance();
+      // Fetch both envelopes and transactions
+      final results = await Future.wait([
+        _apiService.fetchEnvelopes(),
+        _apiService.fetchTransactions(), // <-- Fetch all transactions
+      ]);
+      
+      final envelopes = results[0] as List<Envelope>;
+      final transactions = results[1] as List<Transaction>;
+
+      // Calculate total allocated (money in envelopes)
+      int totalAllocatedCents = 0;
+      for (final env in envelopes) {
+        totalAllocatedCents += env.amount;
+      }
+
+      // Calculate unallocated totals
+      int availableCents = 0;
+      int deallocateCents = 0;
+
+      // Calculate total unallocated (money in transactions)
+      for (final tx in transactions) {
+        final unallocated = tx.unallocatedCents;
+        if (unallocated > 0) {
+          availableCents += unallocated;
+        } else if (unallocated < 0) {
+          deallocateCents += unallocated;
+        }
+      }
+      
+      // The *true* total balance
+      // final totalBalance = totalAllocatedCents + totalUnallocatedCents;
+
+      int availableToAllocateCents = 0;
+      for (final tx in transactions) {
+        final unallocated = tx.unallocatedCents;
+        if (unallocated > 0) { // <-- This is the new condition
+          availableToAllocateCents += unallocated;
+        }
+      }
+      
+      // New total balance calculation (doesn't include the amount to be deallocated)
+      final totalBalance = totalAllocatedCents + availableToAllocateCents;
 
       if (mounted) {
         setState(() {
           _envelopes = envelopes;
-          // _totalBalance = totalBalance; // Use fetched balance
+          _totalBalance = totalBalance; // Use fetched balance
+          _availableToDeallocateCents = deallocateCents; 
           _isLoading = false;
         });
       }
@@ -55,28 +98,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadEnvelopes() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final envelopes = await _apiService.fetchEnvelopes();
-
-      if (mounted) {
-        setState(() {
-          _envelopes = envelopes;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = e.toString().replaceFirst('Exception: ', '');
-          _isLoading = false;
-        });
-      }
-    }
+    await _loadDashboardData();
   }
 
   // Handles navigation to the detail page and catches the result
@@ -90,20 +112,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (result != null && mounted) {
       final status = result['status'] as String?;
-      if (status == 'updated') {
-        _loadEnvelopes(); // Reload all data
-      } else if (status == 'deleted') {
-        // Remove from the list without a full reload
-        final id = result['id'] as String?;
-        setState(() {
-          _envelopes.removeWhere((e) => e.id == id);
-        });
+      if (status == 'updated' || status == 'deleted') {
+        _loadDashboardData(); // Reload all data
       }
     }
   }
 
-  String _formatCurrency(int amount) {
-    return '\$${amount.toStringAsFixed(2)}';
+  String _formatCurrency(int amountInCents) {
+    // Convert cents (int) to dollars (double)
+    final double amountInDollars = amountInCents / 100.0;
+
+    // Create a formatter that handles commas and $
+    final formatter = NumberFormat.currency(
+      locale: 'en_US', // This gives you 1,000.00
+      symbol: '\$',
+      decimalDigits: 2,
+    );
+    return formatter.format(amountInDollars);
   }
 
   // This function builds your list of pie chart slices
@@ -113,7 +138,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Calculate total allocated (now in dollars)
     int totalAllocated = 0;
     for (var envelope in _envelopes) {
-      totalAllocated += envelope.amount;
+      totalAllocated += envelope.amount;    // in cents
     }
     
     // Calculate leftover amount (now in dollars)
@@ -124,13 +149,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final envelope = _envelopes[i];
       final isTouched = (i == _touchedIndex);
       final double radius = isTouched ? 60.0 : 50.0;
-      // Calculation is the same, but uses the dollar values
-      final double percentage = (envelope.amount / _totalBalance) * 100;
+
+      final double percentage = (_totalBalance > 0)
+          ? (envelope.amount / _totalBalance) * 100
+          : 0.0;
 
       slices.add(
         PieChartSectionData(
           color: envelope.resolvedColor,
-          value: envelope.amount.toDouble(), // Value is in dollars
+          value: envelope.amount.toDouble(), // Value is in cents
           title: '${percentage.toStringAsFixed(1)}%',
           radius: radius,
           titleStyle: const TextStyle(
@@ -146,12 +173,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (leftoverAmount > 0) {
       final isTouched = (_envelopes.length == _touchedIndex);
       final double radius = isTouched ? 60.0 : 50.0;
-      final double percentage = (leftoverAmount / _totalBalance) * 100;
+      final double percentage = (_totalBalance > 0)
+          ? (leftoverAmount / _totalBalance) * 100
+          : 0.0;
 
       slices.add(
         PieChartSectionData(
           color: Colors.grey[300],
-          value: leftoverAmount.toDouble(), // Value is in dollars
+          value: leftoverAmount.toDouble(), // Value is in cents
           title: '${percentage.toStringAsFixed(1)}%',
           radius: radius,
           titleStyle: TextStyle(
@@ -195,56 +224,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
             'Total Balance:',
             style: Theme.of(context).textTheme.titleMedium,
           ),
+          _isLoading
+            ? Text(
+                'Loading...',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+              )
+            : Text(
+                _formatCurrency(_totalBalance),
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+
+          const SizedBox(height: 16),
+
+          // Pie Chart Section
           Text(
-            '\$10,000.00', // Placeholder as requested
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            'Your Money\'s Distribution',
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 48),
-
-          // Pie Chart
-          SizedBox(
-            height: 200,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                PieChart(
-                  PieChartData(
-                    pieTouchData: PieTouchData(
-                      touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                        setState(() {
-                          if (!event.isInterestedForInteractions ||
-                              pieTouchResponse == null ||
-                              pieTouchResponse.touchedSection == null) {
-                            _touchedIndex = -1;
-                            return;
-                          }
-                          _touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
-                        });
-                      },
+          _buildPieChartSection(),
+          const SizedBox(height: 10),
+          if (!_isLoading && _availableToDeallocateCents < 0)
+            Padding(
+              // Add some space above it, but less than the next section
+              padding: const EdgeInsets.only(top: 32.0), 
+              child: Center(
+                child: Column(
+                  children: [
+                    Text(
+                      'Needs De-allocation:',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.red[700],
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
                     ),
-                    borderData: FlBorderData(show: false),
-                    sectionsSpace: 2,
-                    centerSpaceRadius: 80,
-                    sections: _buildPieSlices(), // Calls your reworked function
-                  ),
+                    SizedBox(height: 4),
+                    Text(
+                      _formatCurrency(_availableToDeallocateCents),
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red[700],
+                            fontSize: 16,
+                          ),
+                    ),
+                  ],
                 ),
-                Text(
-                  _getTouchedSliceDetails(), // Calls your reworked function
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
 
-          const SizedBox(height: 54),
+          const SizedBox(height: 32),
 
-          // 3. Envelopes Section
+          // Envelopes Section
           Text(
             'Envelopes at a Glance',
             style: Theme.of(context).textTheme.titleLarge,
@@ -253,6 +289,70 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _buildEnvelopeSection(),
         ],
       ),
+    );
+  }
+
+  Widget _buildPieChartSection() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Text(
+          _errorMessage!,
+          style: const TextStyle(color: Colors.red),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    if (_envelopes.isEmpty) {
+      return const Center(child: Text('You have no envelopes yet.'));
+    }
+
+    if (_totalBalance == 0) {
+      return const Center(child: Text("You have currently have no money in your envelopes. \n\nConnect a bank account from within the Accounts page.", textAlign: TextAlign.center,));
+    }
+
+    return SizedBox(
+      height: 200,
+      child: _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Stack(
+            alignment: Alignment.center,
+            children: [
+              PieChart(
+                PieChartData(
+                  pieTouchData: PieTouchData(
+                    touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                      setState(() {
+                        if (!event.isInterestedForInteractions ||
+                            pieTouchResponse == null ||
+                            pieTouchResponse.touchedSection == null) {
+                          _touchedIndex = -1;
+                          return;
+                        }
+                        _touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                      });
+                    },
+                  ),
+                  borderData: FlBorderData(show: false),
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 80,
+                  sections: _buildPieSlices(),
+                ),
+              ),
+              Text(
+                _getTouchedSliceDetails(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
     );
   }
 
@@ -308,8 +408,15 @@ class _EnvelopeCard extends StatelessWidget {
   final Envelope envelope;
   final VoidCallback onTap;
 
-  String _formatCurrency(int amount) {
-    return '\$${amount.toStringAsFixed(2)}';
+  String _formatCurrency(int amountInCents) {
+    final double amountInDollars = amountInCents / 100.0;
+
+    final formatter = NumberFormat.currency(
+      locale: 'en_US',
+      symbol: '\$',
+      decimalDigits: 2,
+    );
+    return formatter.format(amountInDollars);
   }
 
   @override
