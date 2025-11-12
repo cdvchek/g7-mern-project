@@ -33,7 +33,7 @@ router.put('/:id', requireAuth, async (req, res) => {
         }
 
         if (typeof updates.amount_cents !== 'undefined') updates.amount_cents = Number(updates.amount_cents);
-        if (typeof updates.allocated !== 'undefined') updates.allocated = Boolean(updates.allocated);
+        if (typeof updates.allocated !== 'undefined') updates.allocated = Number(updates.allocated);
         if (updates.category && !Array.isArray(updates.category)) updates.category = [updates.category];
 
         if (Object.keys(updates).length === 0) {

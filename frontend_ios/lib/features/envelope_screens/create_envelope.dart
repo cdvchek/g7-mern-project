@@ -44,6 +44,8 @@ class _CreateEnvelopeScreenState extends State<CreateEnvelopeScreen> {
       return;
     }
 
+    final int goalInCents = (parsedGoal * 100);
+
     FocusScope.of(context).unfocus();
     setState(() {
       _isSaving = true;
@@ -53,7 +55,7 @@ class _CreateEnvelopeScreenState extends State<CreateEnvelopeScreen> {
     try {
       final envelope = await _apiService.createEnvelope(
         name: _nameController.text.trim(),
-        monthlyTarget: parsedGoal,
+        monthlyTarget: goalInCents,
         colorHex: _colorToHex(_selectedColor),
         description: _descriptionController.text.trim(),
       );

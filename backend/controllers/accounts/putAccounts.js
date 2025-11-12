@@ -29,13 +29,13 @@ router.put('/:accountId', requireAuth, async (req, res) => {
     const deleted = await Transaction.findOneAndDelete({ account_id: accountId, from_account_tracking: true, allocated: false });
 
     if (!deleted) {
-        const balance = Math.floor(Number.isFinite(acc.balance_current) ? acc.balance_current : 0);
+        const balance = Number.isFinite(acc.balance_current) ? acc.balance_current : 0;
         const amount = (tracking) ? balance : -balance;
         await Transaction.create({
             user_id: req.userId,
             account_id: acc._id,
             from_account_tracking: true,
-            amount_cents: amount * 100,
+            amount_cents: Math.floor(amount * 100),
             posted_at: new Date(),
             plaid_transaction_id: null,
             name: null,

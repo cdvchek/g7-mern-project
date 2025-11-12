@@ -30,7 +30,7 @@ class _EditDeleteEnvelopeScreenState extends State<EditDeleteEnvelopeScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.envelope.name);
-    _goalController = TextEditingController(text: widget.envelope.monthlyTarget.toString());
+    _goalController = TextEditingController(text: (widget.envelope.monthlyTarget! / 100.0).round.toString());
     _descriptionController = TextEditingController(text: widget.envelope.description ?? '');
     _selectedColor = _hexToColor(widget.envelope.color) ?? _colorOptions.last;
   }
@@ -60,13 +60,18 @@ class _EditDeleteEnvelopeScreenState extends State<EditDeleteEnvelopeScreen> {
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final parsedGoal = int.tryParse(_goalController.text.replaceAll(',', '').trim());
+    final parsedGoal = int.tryParse(
+      _goalController.text.replaceAll(',', '').trim(),
+    );
+
     if (parsedGoal == null || parsedGoal < 0) {
       setState(() {
         _errorMessage = 'Allocation goal must be a positive whole number.';
       });
       return;
     }
+
+    final goalInCents = parsedGoal * 100;
 
     FocusScope.of(context).unfocus();
     setState(() {
@@ -78,7 +83,7 @@ class _EditDeleteEnvelopeScreenState extends State<EditDeleteEnvelopeScreen> {
       final updatedEnvelope = await _apiService.updateEnvelope(
         id: widget.envelope.id,
         name: _nameController.text.trim(),
-        monthlyTarget: parsedGoal,
+        monthlyTarget: goalInCents,
         colorHex: _colorToHex(_selectedColor),
         description: _descriptionController.text.trim(),
       );

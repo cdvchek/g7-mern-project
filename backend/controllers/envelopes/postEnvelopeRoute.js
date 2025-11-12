@@ -32,7 +32,7 @@ router.post('/', requireAuth, async (req, res) => { // Added requireAuth for the
             user_id: req.userId,
             name,
             color: color || '',
-            amount: 1000,       // VALUE FOR TESTING ONLY! CHANGE AFTER TESTING!
+            amount: 0,      
             monthly_target: parsedMonthlyTarget,
             order: parsedOrder,
             description: typeof description === 'string' ? description.trim() : '',

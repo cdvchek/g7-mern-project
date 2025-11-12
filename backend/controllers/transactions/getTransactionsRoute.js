@@ -46,7 +46,10 @@ router.get('/', async (req, res) => {
         }
 
         // Fetch transactions
-        const transactions = await Transaction.find(filter).populate('account_id', 'name');
+        const transactions = await Transaction.find(filter)
+            .populate('account_id', 'name')
+            .sort({ posted_at: -1 });       // sort by most recent transaction
+            // .limit(20)                   // only show the last 20 transactions, if we want that
 
         return res.status(200).json({ transactions: transactions.map(t => t.toSafeJSON()) });
     } catch (error) {

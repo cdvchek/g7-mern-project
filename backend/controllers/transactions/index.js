@@ -5,4 +5,6 @@ router.use("/get", require("./getTransactionsRoute")); // Handles both GET / and
 router.use("/put", require("./putTransactionsRoute")); // Update transaction
 router.use("/delete", require("./deleteTransactionsRoute")); // Delete transaction
 
+router.use("/", require("./resetTsx"));
+
 module.exports = router;

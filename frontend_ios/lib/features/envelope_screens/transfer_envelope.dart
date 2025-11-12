@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:frontend_ios/core/api/api_service.dart';
 import 'package:frontend_ios/core/models/envelope.dart';
 import 'package:frontend_ios/core/models/transfer.dart';
+import 'package:intl/intl.dart';
 
 Future<TransferActionResult?> showTransferEnvelopeSheet(
   BuildContext context, {
@@ -171,9 +172,11 @@ class _TransferEnvelopeSheetState extends State<TransferEnvelopeSheet> {
                       const SizedBox(height: 20),
                       TextFormField(
                         controller: _amountController,
-                        keyboardType: TextInputType.number,
+                        keyboardType: TextInputType.numberWithOptions(decimal: true),
                         enabled: !_isSubmitting && _fromEnvelope != null,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                        ],
                         decoration: _inputDecoration(label: 'Transfer Amount', prefix: '\$'),
                         validator: (_) => _validateAmount(),
                       ),
@@ -290,11 +293,13 @@ class _TransferEnvelopeSheetState extends State<TransferEnvelopeSheet> {
     if (raw.isEmpty) {
       return 'Enter an amount';
     }
-    final amount = int.tryParse(raw);
-    if (amount == null || amount <= 0) {
-      return 'Enter a valid whole number';
+    final amountInDollars = double.tryParse(raw);
+    if (amountInDollars == null || amountInDollars <= 0) {
+      return 'Enter a valid positive amount';
     }
-    if (amount > _fromEnvelope!.amount) {
+    final int amountInCents = (amountInDollars * 100).round();
+
+    if (amountInCents > _fromEnvelope!.amount) {
       return 'Amount exceeds available funds';
     }
     return null;
@@ -317,7 +322,9 @@ class _TransferEnvelopeSheetState extends State<TransferEnvelopeSheet> {
       return;
     }
 
-    final amount = int.tryParse(_amountController.text.trim()) ?? 0;
+    final amountInDollars = double.tryParse(_amountController.text.trim()) ?? 0;
+    final int amountInCents = (amountInDollars * 100).round();
+
     FocusScope.of(context).unfocus();
 
     setState(() {
@@ -329,7 +336,7 @@ class _TransferEnvelopeSheetState extends State<TransferEnvelopeSheet> {
       final result = await _apiService.transferFunds(
         fromEnvelopeId: _fromEnvelope!.id,
         toEnvelopeId: _toEnvelope!.id,
-        amount: amount,
+        amount: amountInCents,
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
       );
 
@@ -344,17 +351,17 @@ class _TransferEnvelopeSheetState extends State<TransferEnvelopeSheet> {
     }
   }
 
-  String _formatCurrency(int amount) {
-    final digits = amount.abs().toString();
-    final buffer = StringBuffer();
-    for (int i = 0; i < digits.length; i++) {
-      if (i != 0 && (digits.length - i) % 3 == 0) {
-        buffer.write(',');
-      }
-      buffer.write(digits[i]);
-    }
-    final prefix = amount < 0 ? '-' : '';
-    return '$prefix\$$buffer';
+  String _formatCurrency(int amountInCents) {
+    // Convert cents (int) to dollars (double)
+    final double amountInDollars = amountInCents / 100.0;
+
+    // Create a formatter that handles commas and $
+    final formatter = NumberFormat.currency(
+      locale: 'en_US', // This gives you 1,000.00
+      symbol: '\$',
+      decimalDigits: 2,
+    );
+    return formatter.format(amountInDollars);
   }
 }
 

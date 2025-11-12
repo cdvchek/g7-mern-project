@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:frontend_ios/core/models/envelope.dart';
 import 'package:frontend_ios/core/models/transfer.dart';
 import 'package:frontend_ios/core/models/user.dart';
+import 'package:frontend_ios/core/models/account.dart';
+import 'package:frontend_ios/core/models/bank.dart';
+import 'package:frontend_ios/core/models/transaction.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -277,6 +280,7 @@ class ApiService {
   Future<Envelope> updateEnvelope({
     required String id,
     String? name,
+    int? amount,
     int? monthlyTarget,
     String? colorHex,
     String? description,
@@ -288,6 +292,7 @@ class ApiService {
       final headers = await getAuthHeaders();
       final Map<String, dynamic> payload = {};
       if (name != null) payload['name'] = name;
+      if (amount != null) payload['amount'] = amount;
       if (monthlyTarget != null) payload['monthly_target'] = monthlyTarget;
       if (colorHex != null) payload['color'] = colorHex;
       if (description != null) payload['description'] = description;
@@ -420,6 +425,157 @@ class ApiService {
     }
   }
 
+  Future<int> fetchTotalBalance() async {
+    // This now points to the new /api/accounts/total route
+    final url = Uri.parse('$_baseUrl/api/accounts/total');
+    
+    try {
+      final headers = await getAuthHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        
+        // The backend route returns { total_balance_cents: ... }
+        return body['total_balance_cents'] as int; 
+      }
+
+      if (response.statusCode == 401) {
+        throw Exception('Session expired. Please sign in again.');
+      }
+
+      // Handle other errors
+      final decoded = _tryDecode(response.body);
+      throw Exception(decoded['error'] ?? 'Failed to load total balance');
+    } catch (e) {
+      // Handle network errors
+      throw Exception('Failed to load balance: $e');
+    }
+  }
+
+  // Fetches the list of linked banks
+  Future<List<BankConnection>> fetchBankConnections() async {
+    // This route GET /api/banks/ was from your 'getBanks.js'
+    final url = Uri.parse('$_baseUrl/api/banks/get'); 
+    final headers = await getAuthHeaders();
+
+    try {
+      final response = await http.get(url, headers: headers);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as List<dynamic>;
+        return data
+            .map((item) => BankConnection.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+      throw Exception('Failed to load banks: ${response.body}');
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  // Fetches the accounts for one specific bank
+  Future<List<Account>> fetchAccountsForBank(String itemId) async {
+    // This route GET /api/banks/:itemId/accounts was from your 'getBanks.js'
+    final url = Uri.parse('$_baseUrl/api/banks/get/$itemId/accounts'); 
+    final headers = await getAuthHeaders();
+
+    try {
+      final response = await http.get(url, headers: headers);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as List<dynamic>;
+        return data
+            .map((item) => Account.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+      throw Exception('Failed to load accounts: ${response.body}');
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  // Update if a bank's account is tracked or not
+  Future<Account> updateAccountTracking({
+    required String accountId,
+    required bool isTracking,
+    required String itemId, // Your backend needs this in the body
+  }) async {
+    // Calls PUT /api/accounts/put/:accountId
+    final url = Uri.parse('$_baseUrl/api/accounts/put/$accountId'); 
+    final headers = await getAuthHeaders();
+
+    try {
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode({
+          'tracking': isTracking,
+          'item_id': itemId, // This is required by your putAccounts.js route
+        }),
+      );
+
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 200 && body['ok'] == true) {
+        // Your backend route returns the updated account
+        return Account.fromJson(body['account']);
+      }
+      throw Exception('Failed to update account: ${body['error'] ?? 'Unknown error'}');
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  // Fetches all transactions for the user
+  Future<List<Transaction>> fetchTransactions() async {
+    final url = Uri.parse('$_baseUrl/api/transactions/get');
+    final headers = await getAuthHeaders();
+
+    try {
+      final response = await http.get(url, headers: headers);
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        // Your route returns { transactions: [...] }
+        final data = body['transactions'] as List<dynamic>;
+        return data
+            .map((item) => Transaction.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+      throw Exception('Failed to load transactions: ${response.body}');
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  // Updates a transaction (e.g., to mark it as allocated)
+  Future<Transaction> updateTransaction({
+    required String id,
+    int? allocated,
+    // You can add other fields here if needed
+  }) async {
+    // Your index.js mounts this at /put
+    final url = Uri.parse('$_baseUrl/api/transactions/put/$id');
+    final headers = await getAuthHeaders();
+
+    final Map<String, dynamic> payload = {};
+    if (allocated != null) payload['allocated'] = allocated;
+
+    try {
+      final response = await http.put(
+        url,
+        headers: headers,
+        body: jsonEncode(payload),
+      );
+
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 200 && body['transaction'] != null) {
+        return Transaction.fromJson(body['transaction']);
+      }
+      throw Exception(
+          'Failed to update transaction: ${body['error'] ?? 'Unknown error'}');
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
   Map<String, dynamic> _tryDecode(String raw) {
     if (raw.isEmpty) return <String, dynamic>{};
     try {
@@ -514,5 +670,22 @@ class ApiService {
       return now + (relativeSeconds * 1000).round();
     }
     return null;
+  }
+
+  Future<String> resetBalancingTransactions() async {
+    final url = Uri.parse('$_baseUrl/api/transactions/reset-balancing-txs');
+    final headers = await getAuthHeaders();
+
+    try {
+      final response = await http.post(url, headers: headers);
+      final body = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && body['ok'] == true) {
+        return body['message'];
+      }
+      throw Exception(body['error'] ?? 'Failed to reset transactions');
+    } catch (e) {
+      throw Exception(e.toString());
+    }
   }
 }
