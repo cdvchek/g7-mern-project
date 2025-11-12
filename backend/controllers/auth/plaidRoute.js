@@ -17,6 +17,7 @@ router.post('/create-link-token', requireAuth, async (req, res) => {
             products: (process.env.PLAID_PRODUCTS || 'transactions').split(','),
             country_codes: (process.env.PLAID_COUNTRY_CODES || 'US').split(','),
             language: 'en',
+            webhook: 'https://g7-budget-api-f1d28235def3.herokuapp.com/api/plaid/webhook/'
         });
         return res.json({ link_token: r.data.link_token });
     } catch (e) {
@@ -29,7 +30,6 @@ router.post('/create-link-token', requireAuth, async (req, res) => {
 router.post('/exchange-public-token', requireAuth, async (req, res) => {
     try {
         const { public_token, institution } = req.body || {};
-        console.log("Institution:", institution);
 
         if (!public_token) {
             return res.status(400).json({ error: 'missing_public_token' });

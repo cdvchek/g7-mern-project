@@ -16,5 +16,6 @@ router.use("/transactions", require("./transactions"));
 router.use("/transfers", require("./transfers"));
 router.use("/banks", require("./banks"));
 router.use("/accounts", require("./accounts"));
+router.use("/plaid", require('./plaid'));
 
 module.exports = router;

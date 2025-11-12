@@ -1,40 +1,25 @@
 // models/Transaction.js
 const { Schema, model } = require('mongoose');
 
-const transactionSchema = new Schema(
-    {
-        user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-        account_id: { type: Schema.Types.ObjectId, ref: 'Account', required: true, index: true },
+const transactionSchema = new Schema({
+    user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    account_id: { type: Schema.Types.ObjectId, ref: 'Account', required: true, index: true },
+    from_account_tracking: { type: Boolean, required: true },
+    amount_cents: { type: Schema.Types.Int32, required: true },
+    allocated: { type: Boolean, default: false },
+    posted_at: { type: Date, required: true, index: true },
 
-        from_account_tracking: {
-            type: Boolean,
-            required: true,
-        },
+    plaid_transaction_id: { type: String, unique: false, default: undefined },
 
-        amount_cents: { type: Schema.Types.Int32, required: true },
+    name: { type: String, default: '' },
+    merchant_name: { type: String, default: '' },
+    category: { type: [String], default: [] },
+}, { timestamps: true });
 
-        allocated: {
-            type: Boolean,
-            default: false,
-        },
-
-        posted_at: { type: Date, required: true, index: true },
-
-        plaid_transaction_id: { type: String, index: { unique: true, sparse: true } },
-        name: { type: String, default: '' },
-        merchant_name: { type: String, default: '' },
-        category: { type: [String], default: [] },
-    },
-    { timestamps: true }
-);
-
-// ---------- Indexes you’ll actually use ----------
-
+// Oldest-unallocated/sorts
 transactionSchema.index({ user_id: 1, account_id: 1, posted_at: 1 });
 
-// ---------- Useful helpers ----------
 
-// Quick safe JSON (omit noise if you want)
 transactionSchema.methods.toSafeJSON = function () {
     return {
         id: this._id,

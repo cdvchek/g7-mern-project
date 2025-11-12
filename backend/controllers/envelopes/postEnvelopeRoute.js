@@ -14,7 +14,7 @@ router.post('/', requireAuth, async (req, res) => { // Added requireAuth for the
         }
 
         // Parse the integers to assure that we are recieving numbers
-        const parsedMonthlyTarget = Number(monthly_target);
+        const parsedMonthlyTarget = Number(monthly_target) || 0;
         const parsedOrder = Number(order) || 0;
 
         // Valiadate value is int and greater than or equal to 0
