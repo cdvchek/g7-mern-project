@@ -20,7 +20,7 @@ class ApiService {
 
   // Replace with your computer's IP address and backend port
   // (Do NOT use localhost, your phone simulator can't see it)
-  final String _baseUrl = 'http://100.70.152.25:3001'; // for local
+  final String _baseUrl = 'https://g7-budget-api-f1d28235def3.herokuapp.com/';
 
   Future<void> saveCookie(http.Response response) async {
     final String? rawCookie = response.headers['set-cookie'];
